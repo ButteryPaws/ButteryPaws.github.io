@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/Prompt.astro';
+import PostList from '../../components/PostList.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<BaseLayout title="blog" description="Technical blog posts.">
+  <div class="page-head">
+    <div class="page-head__cmd"><Prompt path="~/blog" cmd="ls -lt" /></div>
+    <h1>blog</h1>
+    <p class="page-head__desc">
+      Notes, teardowns, and things I figured out the hard way.
+    </p>
+  </div>
+  <PostList posts={posts} emptyText="no blog posts yet — coming soon" />
+</BaseLayout>

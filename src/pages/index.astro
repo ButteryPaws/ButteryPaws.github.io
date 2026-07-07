@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Prompt from '../components/Prompt.astro';
+import PostList from '../components/PostList.astro';
+import { SITE } from '../consts';
+
+const notDraft = ({ data }: any) => !data.draft;
+const byDate = (a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf();
+
+const blog = (await getCollection('blog', notDraft)).sort(byDate);
+const ctf = (await getCollection('ctf', notDraft)).sort(byDate);
+
+const recentBlog = blog.slice(0, 4);
+const recentCtf = ctf.slice(0, 4);
+---
+
+<BaseLayout>
+  <section class="terminal" aria-label="Intro">
+    <div class="terminal__bar">
+      <span class="terminal__dot terminal__dot--r"></span>
+      <span class="terminal__dot terminal__dot--y"></span>
+      <span class="terminal__dot terminal__dot--g"></span>
+      <span class="terminal__title">{SITE.user}@{SITE.host}: ~</span>
+    </div>
+    <div class="terminal__body">
+      <p><Prompt cmd="whoami" /></p>
+      <p style="margin-top:-0.4rem">
+        {SITE.author} — I break things, then write about how they broke.
+        Technical notes and CTF write-ups on security, systems, and low-level
+        curiosities.
+      </p>
+      <p style="margin-top:1rem"><Prompt cmd="ls ~" /></p>
+      <p style="margin-top:-0.4rem" class="muted">
+        <a href="/blog">blog/</a>&nbsp;&nbsp;<a href="/ctf">ctf/</a
+        >&nbsp;&nbsp;<a href="/tags">tags/</a>&nbsp;&nbsp;<a href="/about"
+          >about.txt</a
+        >
+      </p>
+      <p style="margin-top:1rem; margin-bottom:0">
+        <Prompt cursor={true} />
+      </p>
+    </div>
+  </section>
+
+  <div class="section-title">
+    <h2><a href="/blog" class="no-underline">~/blog</a></h2>
+    <a href="/blog" class="muted">all posts &rarr;</a>
+  </div>
+  <PostList posts={recentBlog} emptyText="no blog posts yet — coming soon" />
+
+  <div class="section-title">
+    <h2><a href="/ctf" class="no-underline">~/ctf</a></h2>
+    <a href="/ctf" class="muted">all write-ups &rarr;</a>
+  </div>
+  <PostList posts={recentCtf} emptyText="no write-ups yet — coming soon" />
+</BaseLayout>

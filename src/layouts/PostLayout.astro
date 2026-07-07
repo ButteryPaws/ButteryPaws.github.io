@@ -1,0 +1,95 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import Prompt from '../components/Prompt.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+
+interface Props {
+  post: any;
+  section: 'blog' | 'ctf';
+}
+const { post, section } = Astro.props;
+const { data } = post;
+
+// Build prev/next within the same collection, newest-first.
+const all = (await getCollection(section, ({ data }: any) => !data.draft)).sort(
+  (a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const idx = all.findIndex((p: any) => p.id === post.id);
+const newer = idx > 0 ? all[idx - 1] : null;
+const older = idx < all.length - 1 ? all[idx + 1] : null;
+
+const isCtf = section === 'ctf';
+---
+
+<BaseLayout title={data.title} description={data.description} article={true}>
+  <article>
+    <div class="page-head">
+      <div class="page-head__cmd">
+        <Prompt path={`~/${section}`} cmd={`cat ${post.id}.md`} />
+      </div>
+      <h1>{data.title}</h1>
+      <p class="post-item__meta" style="margin-top:0.7rem">
+        <FormattedDate date={data.date} />
+        {data.updated && (
+          <span class="muted">· updated <FormattedDate date={data.updated} /></span>
+        )}
+        {isCtf && data.category && <span class="meta-cat">{data.category}</span>}
+      </p>
+    </div>
+
+    {
+      isCtf && (data.event || data.category || data.difficulty || data.points) && (
+        <dl class="challenge-card">
+          {data.event && (
+            <div><dt>Event</dt><dd>{data.event}</dd></div>
+          )}
+          {data.category && (
+            <div><dt>Category</dt><dd>{data.category}</dd></div>
+          )}
+          {data.difficulty && (
+            <div>
+              <dt>Difficulty</dt>
+              <dd class={`difficulty--${data.difficulty}`}>{data.difficulty}</dd>
+            </div>
+          )}
+          {typeof data.points === 'number' && (
+            <div><dt>Points</dt><dd>{data.points}</dd></div>
+          )}
+        </dl>
+      )
+    }
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    {
+      isCtf && data.flag && (
+        <details class="flag">
+          <summary>reveal flag</summary>
+          <div class="flag__value">{data.flag}</div>
+        </details>
+      )
+    }
+
+    {
+      data.tags && data.tags.length > 0 && (
+        <ul class="tags" style="margin-top:2rem">
+          {data.tags.map((t: string) => (
+            <li><a class="tag" href={`/tags/${t}`}>{t}</a></li>
+          ))}
+        </ul>
+      )
+    }
+
+    <nav class="post-foot" aria-label="Post navigation">
+      <span>
+        {older && <a href={`/${section}/${older.id}`}>&larr; {older.data.title}</a>}
+      </span>
+      <span>
+        {newer && <a href={`/${section}/${newer.id}`}>{newer.data.title} &rarr;</a>}
+      </span>
+    </nav>
+  </article>
+</BaseLayout>

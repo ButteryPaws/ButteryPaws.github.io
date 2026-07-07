@@ -1,0 +1,28 @@
+---
+import { SITE, NAV } from '../consts';
+
+// Normalize current path (strip trailing slash) for active-link matching.
+const here = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isActive = (href: string) => {
+  const h = href.replace(/\/+$/, '') || '/';
+  return h === '/' ? here === '/' : here === h || here.startsWith(h + '/');
+};
+---
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a href="/" class="brand no-underline">{SITE.user}@{SITE.host}</a>
+    <nav class="nav" aria-label="Primary">
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>

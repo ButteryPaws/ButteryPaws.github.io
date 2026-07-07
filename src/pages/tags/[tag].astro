@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/Prompt.astro';
+import PostList from '../../components/PostList.astro';
+
+export async function getStaticPaths() {
+  // Defined inside getStaticPaths: Astro hoists this function and runs it in
+  // isolation, so it cannot see variables declared in the component body.
+  const notDraft = ({ data }: any) => !data.draft;
+  const all = [
+    ...(await getCollection('blog', notDraft)),
+    ...(await getCollection('ctf', notDraft)),
+  ];
+
+  const byTag = new Map<string, any[]>();
+  for (const post of all) {
+    for (const tag of post.data.tags ?? []) {
+      byTag.set(tag, [...(byTag.get(tag) ?? []), post]);
+    }
+  }
+
+  return [...byTag.entries()].map(([tag, posts]) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts.sort(
+        (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+      ),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag}`} description={`Posts tagged ${tag}.`}>
+  <div class="page-head">
+    <div class="page-head__cmd">
+      <Prompt path="~" cmd={`grep -rl "#${tag}"`} />
+    </div>
+    <h1>#{tag}</h1>
+    <p class="page-head__desc">
+      {posts.length} {posts.length === 1 ? 'entry' : 'entries'} ·
+      <a href="/tags">all tags</a>
+    </p>
+  </div>
+  <PostList posts={posts} />
+</BaseLayout>

@@ -1,0 +1,7 @@
+# pnpm settings live here now (the "pnpm" field in package.json is no longer
+# read by pnpm 11). Allow the postinstall build scripts Astro relies on:
+#   - esbuild: bundler used by Vite/Astro
+#   - sharp:   image optimization
+allowBuilds:
+  esbuild: true
+  sharp: true

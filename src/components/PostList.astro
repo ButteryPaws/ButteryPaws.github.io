@@ -1,0 +1,52 @@
+---
+import FormattedDate from './FormattedDate.astro';
+
+interface Item {
+  id: string;
+  collection: string;
+  data: {
+    title: string;
+    description: string;
+    date: Date;
+    tags?: string[];
+    category?: string;
+    event?: string;
+  };
+}
+
+interface Props {
+  posts: Item[];
+  /** Show an empty-state message when there are no posts. */
+  emptyText?: string;
+}
+const { posts, emptyText = 'No entries yet.' } = Astro.props;
+
+const hrefFor = (p: Item) => `/${p.collection}/${p.id}`;
+---
+
+{
+  posts.length === 0 ? (
+    <p class="muted">// {emptyText}</p>
+  ) : (
+    <ul class="post-list">
+      {posts.map((p) => (
+        <li class="post-item">
+          <h3 class="post-item__title">
+            <a href={hrefFor(p)}>{p.data.title}</a>
+          </h3>
+          <div class="post-item__meta">
+            <FormattedDate date={p.data.date} />
+            {p.data.category && <span class="meta-cat">{p.data.category}</span>}
+            {p.data.event && <span class="muted">{p.data.event}</span>}
+            {p.data.tags && p.data.tags.length > 0 && (
+              <span class="muted">{p.data.tags.map((t) => `#${t}`).join(' ')}</span>
+            )}
+          </div>
+          {p.data.description && (
+            <p class="post-item__desc">{p.data.description}</p>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}

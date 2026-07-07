@@ -1,0 +1,22 @@
+---
+/**
+ * The reusable shell-prompt motif: visitor@butterypaws:~/path$ <cmd>
+ */
+import { SITE } from '../consts';
+
+interface Props {
+  path?: string;
+  cmd?: string;
+  /** Show a blinking cursor after the command. */
+  cursor?: boolean;
+}
+const { path = '~', cmd, cursor = false } = Astro.props;
+---
+
+<span class="prompt">
+  <span class="user">{SITE.user}</span><span class="at">@</span><span class="host"
+    >{SITE.host}</span
+  ><span class="sign">:</span><span class="path">{path}</span><span class="sign"
+    >$</span
+  >{cmd && <span class="cmd"> {cmd}</span>}{cursor && <span class="cursor" aria-hidden="true"></span>}
+</span>

@@ -1,0 +1,22 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/Prompt.astro';
+import PostList from '../../components/PostList.astro';
+
+const posts = (await getCollection('ctf', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<BaseLayout title="ctf" description="CTF challenge write-ups.">
+  <div class="page-head">
+    <div class="page-head__cmd"><Prompt path="~/ctf" cmd="ls -lt" /></div>
+    <h1>ctf</h1>
+    <p class="page-head__desc">
+      Write-ups from capture-the-flag competitions — pwn, web, crypto, rev, and
+      the occasional rabbit hole.
+    </p>
+  </div>
+  <PostList posts={posts} emptyText="no write-ups yet — coming soon" />
+</BaseLayout>

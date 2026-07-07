@@ -1,0 +1,27 @@
+---
+import { SITE, SOCIALS } from '../consts';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>
+      &copy; {year} {SITE.author} &mdash; built with
+      <a href="https://astro.build">Astro</a>
+    </span>
+    <span class="stack-inline">
+      {
+        SOCIALS.map((s, i) => (
+          <>
+            {i > 0 && <span class="muted"> · </span>}
+            <a href={s.href} rel="me noopener" target="_blank">
+              {s.label}
+            </a>
+          </>
+        ))
+      }
+      {SOCIALS.length > 0 && <span class="muted"> · </span>}
+      <a href="/rss.xml">rss</a>
+    </span>
+  </div>
+</footer>

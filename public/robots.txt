@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://butterypaws.github.io/sitemap-index.xml

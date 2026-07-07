@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Prompt from '../components/Prompt.astro';
+---
+
+<BaseLayout title="404" description="Page not found.">
+  <section class="terminal">
+    <div class="terminal__bar">
+      <span class="terminal__dot terminal__dot--r"></span>
+      <span class="terminal__dot terminal__dot--y"></span>
+      <span class="terminal__dot terminal__dot--g"></span>
+      <span class="terminal__title">error</span>
+    </div>
+    <div class="terminal__body">
+      <p><Prompt cmd="cat $REQUESTED_PATH" /></p>
+      <p style="margin-top:-0.4rem; color:var(--red)">
+        bash: no such file or directory (404)
+      </p>
+      <p style="margin-top:1rem">
+        The page you're looking for doesn't exist — maybe it moved, maybe it
+        never did.
+      </p>
+      <p style="margin-bottom:0">
+        <a href="/" class="btn-line">cd ~</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

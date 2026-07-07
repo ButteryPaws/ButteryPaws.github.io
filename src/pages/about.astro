@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Prompt from '../components/Prompt.astro';
+import { SITE, SOCIALS } from '../consts';
+---
+
+<BaseLayout title="about" description={`About ${SITE.author}.`}>
+  <div class="page-head">
+    <div class="page-head__cmd"><Prompt path="~" cmd="cat about.txt" /></div>
+    <h1>about</h1>
+  </div>
+
+  <div class="prose">
+    <p>
+      Hi — I'm {SITE.author}. This is where I keep technical notes and CTF
+      write-ups. <strong>Replace this text</strong> with a short bio: what you
+      work on, what you're into, and why someone should read your posts.
+    </p>
+
+    <h2>what you'll find here</h2>
+    <ul>
+      <li><a href="/blog">blog</a> — longer-form technical writing.</li>
+      <li><a href="/ctf">ctf</a> — challenge write-ups, mostly security.</li>
+      <li><a href="/tags">tags</a> — browse everything by topic.</li>
+    </ul>
+
+    <h2>elsewhere</h2>
+    {
+      SOCIALS.length > 0 ? (
+        <ul>
+          {SOCIALS.map((s) => (
+            <li>
+              {s.label}: <a href={s.href} rel="me">{s.href}</a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="muted">
+          // add your links in <code>src/consts.ts</code> (SOCIALS)
+        </p>
+      )
+    }
+
+    <p>
+      Prefer feeds? Subscribe via <a href="/rss.xml">RSS</a>.
+    </p>
+  </div>
+</BaseLayout>
