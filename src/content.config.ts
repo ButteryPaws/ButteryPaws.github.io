@@ -36,6 +36,16 @@ const ctf = defineCollection({
     category: z.string().optional(),
     difficulty: z.enum(['easy', 'medium', 'hard', 'insane']).optional(),
     points: z.number().optional(),
+    /**
+     * The challenge prompt, shown verbatim in a panel above the write-up so a
+     * reader doesn't have to hunt for the original. Line breaks are preserved —
+     * use a YAML block scalar (`problem: |`) for multi-line prompts.
+     */
+    problem: z.string().optional(),
+    /** Link to the original challenge (organizer page, archive, etc.). */
+    problemUrl: z.string().url().optional(),
+    /** Progressive hints — each is rendered as its own click-to-reveal spoiler. */
+    hints: z.array(z.string()).default([]),
     /** The captured flag — rendered in a spoiler block, not inline. */
     flag: z.string().optional(),
     draft: z.boolean().default(false),

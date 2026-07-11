@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import Prompt from '../components/Prompt.astro';
 import FormattedDate from '../components/FormattedDate.astro';
+import { renderMarkdown } from '../lib/markdown';
 
 interface Props {
   post: any;
@@ -11,6 +12,16 @@ interface Props {
 const { post, section } = Astro.props;
 const { data } = post;
 
+const isCtf = section === 'ctf';
+
+// CTF problem prompt + hints are authored as Markdown in frontmatter; render
+// them to HTML so links, bold, inline code, etc. display properly.
+const problemHtml = isCtf && data.problem ? await renderMarkdown(data.problem) : null;
+const hintsHtml: string[] =
+  isCtf && data.hints.length
+    ? await Promise.all(data.hints.map((h: string) => renderMarkdown(h)))
+    : [];
+
 // Build prev/next within the same collection, newest-first.
 const all = (await getCollection(section, ({ data }: any) => !data.draft)).sort(
   (a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf()
@@ -18,8 +29,6 @@ const all = (await getCollection(section, ({ data }: any) => !data.draft)).sort(
 const idx = all.findIndex((p: any) => p.id === post.id);
 const newer = idx > 0 ? all[idx - 1] : null;
 const older = idx < all.length - 1 ? all[idx + 1] : null;
-
-const isCtf = section === 'ctf';
 ---
 
 <BaseLayout title={data.title} description={data.description} article={true}>
@@ -57,6 +66,32 @@ const isCtf = section === 'ctf';
             <div><dt>Points</dt><dd>{data.points}</dd></div>
           )}
         </dl>
+      )
+    }
+
+    {
+      isCtf && (data.problem || data.problemUrl || data.hints.length > 0) && (
+        <section class="problem" aria-label="Challenge problem">
+          <h2 class="problem__title">Problem</h2>
+          {problemHtml && <div class="problem__statement" set:html={problemHtml} />}
+          {data.problemUrl && (
+            <p class="problem__link">
+              <a href={data.problemUrl} target="_blank" rel="noopener noreferrer">
+                View original challenge ↗
+              </a>
+            </p>
+          )}
+          {data.hints.length > 0 && (
+            <div class="problem__hints">
+              {data.hints.map((_hint: string, i: number) => (
+                <details class="hint">
+                  <summary>Hint {i + 1}</summary>
+                  <div class="hint__body" set:html={hintsHtml[i]} />
+                </details>
+              ))}
+            </div>
+          )}
+        </section>
       )
     }
 

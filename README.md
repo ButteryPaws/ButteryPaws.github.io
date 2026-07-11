@@ -61,6 +61,13 @@ category: 'pwn'                 # pwn | web | crypto | rev | forensics | misc
 difficulty: 'easy'             # easy | medium | hard | insane
 points: 100
 tags: ['pwn', 'ret2win']
+problem: |                     # the original prompt, rendered as Markdown
+  The challenge description, as given by the organizers.
+  Supports **Markdown** — links, `inline code`, etc. Line breaks are kept.
+problemUrl: 'https://...'     # link to the original challenge (optional)
+hints:                         # each becomes its own click-to-reveal spoiler
+  - 'First nudge — also **Markdown**.'
+  - 'A bigger nudge.'
 flag: 'flag{...}'              # shown in a click-to-reveal spoiler
 ---
 ```

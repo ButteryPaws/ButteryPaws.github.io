@@ -409,6 +409,56 @@ pre code { background: none; border: none; padding: 0; font-size: inherit; }
 .challenge-card .difficulty--hard   { color: var(--red); }
 .challenge-card .difficulty--insane { color: var(--magenta); }
 
+/* CTF problem statement + hints -------------------------------------------- */
+.problem {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-bright);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+  padding: 1rem 1.1rem 1.1rem;
+}
+.problem__title {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--amber);
+}
+.problem__statement {
+  margin: 0;
+  color: var(--fg);
+}
+.problem__statement > :first-child { margin-top: 0; }
+.problem__statement > :last-child { margin-bottom: 0; }
+.problem__statement p { margin: 0 0 0.6rem; }
+.problem__link { margin: 0.85rem 0 0; font-size: 0.95rem; }
+.problem__hints { margin-top: 0.9rem; display: grid; gap: 0.4rem; }
+.hint {
+  border: 1px dashed var(--border-bright);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.hint > summary {
+  cursor: pointer;
+  padding: 0.45rem 0.8rem;
+  color: var(--cyan);
+  font-weight: 600;
+  font-size: 0.9rem;
+  list-style: none;
+}
+.hint > summary::-webkit-details-marker { display: none; }
+.hint > summary::before { content: '▸ '; }
+.hint[open] > summary::before { content: '▾ '; }
+.hint__body {
+  padding: 0 0.8rem 0.7rem;
+  color: var(--fg-dim);
+  font-size: 0.92rem;
+}
+.hint__body > :first-child { margin-top: 0; }
+.hint__body > :last-child { margin-bottom: 0; }
+.hint__body p { margin: 0 0 0.5rem; }
+
 /* flag spoiler ------------------------------------------------------------- */
 .flag {
   margin: 1.5rem 0;
@@ -431,6 +481,27 @@ pre code { background: none; border: none; padding: 0; font-size: inherit; }
   color: var(--amber);
   word-break: break-all;
   font-size: 0.95rem;
+}
+
+/* collapsible full-code dump ----------------------------------------------- */
+.prose details.code-dump {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+}
+.prose details.code-dump > summary {
+  cursor: pointer;
+  padding: 0.55rem 0.9rem;
+  color: var(--cyan);
+  font-weight: 600;
+  list-style: none;
+}
+.prose details.code-dump > summary::-webkit-details-marker { display: none; }
+.prose details.code-dump > summary::before { content: '▸ '; }
+.prose details.code-dump[open] > summary::before { content: '▾ '; }
+.prose details.code-dump > pre {
+  margin: 0.2rem 0.9rem 0.9rem;
 }
 
 /* post navigation footer --------------------------------------------------- */
