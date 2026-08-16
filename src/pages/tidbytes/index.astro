@@ -1,0 +1,47 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Prompt from '../../components/Prompt.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+
+// Short entries rendered inline (no per-post page), newest first.
+const entries = (await getCollection('tidbytes', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const feed = await Promise.all(
+  entries.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+);
+---
+
+<BaseLayout title="tidbytes" description="Small stories, jokes, and the odd meme.">
+  <div class="page-head">
+    <div class="page-head__cmd"><Prompt path="~/tidbytes" cmd="tail -f" /></div>
+    <h1>tidbytes</h1>
+    <p class="page-head__desc">
+      Tweet-sized things: small stories, jokes, and the odd meme.
+    </p>
+  </div>
+
+  {
+    feed.length === 0 ? (
+      <p class="muted">// nothing here yet — coming soon</p>
+    ) : (
+      <ul class="tidbytes">
+        {feed.map(({ entry, Content }) => (
+          <li class="tidbyte">
+            {entry.data.title && <h3 class="tidbyte__title">{entry.data.title}</h3>}
+            <div class="tidbyte__meta">
+              <FormattedDate date={entry.data.date} />
+              {entry.data.tags.length > 0 && (
+                <span class="muted">{entry.data.tags.map((t) => `#${t}`).join(' ')}</span>
+              )}
+            </div>
+            <div class="prose tidbyte__body">
+              <Content />
+            </div>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>

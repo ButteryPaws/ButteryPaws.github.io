@@ -483,6 +483,28 @@ pre code { background: none; border: none; padding: 0; font-size: inherit; }
   font-size: 0.95rem;
 }
 
+/* tidbytes feed ------------------------------------------------------------- */
+.tidbytes { list-style: none; margin: 0; padding: 0; }
+.tidbyte {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+  padding: 1rem 1.2rem;
+  margin: 0 0 1.2rem;
+}
+.tidbyte__title { margin: 0 0 0.4rem; }
+.tidbyte__meta {
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+/* body reuses .prose; just trim outer margins so the card hugs its content */
+.tidbyte__body > :first-child { margin-top: 0; }
+.tidbyte__body > :last-child { margin-bottom: 0; }
+
 /* collapsible full-code dump ----------------------------------------------- */
 .prose details.code-dump {
   margin: 1.5rem 0;

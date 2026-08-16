@@ -33,6 +33,7 @@ export const NAV: { label: string; href: string }[] = [
   { label: 'home', href: '/' },
   { label: 'blog', href: '/blog' },
   { label: 'ctf', href: '/ctf' },
+  { label: 'tidbytes', href: '/tidbytes' },
   { label: 'tags', href: '/tags' },
   { label: 'about', href: '/about' },
 ];

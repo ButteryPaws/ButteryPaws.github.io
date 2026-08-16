@@ -52,4 +52,18 @@ const ctf = defineCollection({
   }),
 });
 
-export const collections = { blog, ctf };
+/**
+ * `tidbytes` — tweet-sized stories, jokes, or a meme. No title, no per-post
+ * page: the Markdown body IS the content, rendered inline in the /tidbytes feed.
+ */
+const tidbytes = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/tidbytes' }),
+  schema: z.object({
+    title: z.string().optional(),
+    date: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, ctf, tidbytes };
