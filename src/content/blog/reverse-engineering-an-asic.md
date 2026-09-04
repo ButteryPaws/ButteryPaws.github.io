@@ -7,7 +7,7 @@ draft: false
 ---
 
 # Preface
-I came across [this challenge](https://blog.janestreet.com/can-you-reverse-engineer-an-asic/) by [Jane Street](www.janestreet.com) when my PI sent me a link to it and suggested that it is 'an interesting area to hack on', because it might closely resemble my own research work.
+I came across [this challenge](https://blog.janestreet.com/can-you-reverse-engineer-an-asic/) by [Jane Street](https://www.janestreet.com) when my PI sent me a link to it and suggested that it is 'an interesting area to hack on', because it might closely resemble my own research work.
 I have spent over a week working on it nearly full-time. I spent the previous 2 weeks learning OCaml and getting bamboozled by [memoization](https://fplaunchpad.org/ocaml_nptel/M08-L01-option-monad.html) and [functors](https://fplaunchpad.org/ocaml_nptel/M07-L08-functors.html), so this was a refreshing filler before I moved on to Monads and GADTs.
 
 ## AI Usage Disclosure
