@@ -505,6 +505,71 @@ pre code { background: none; border: none; padding: 0; font-size: inherit; }
 .tidbyte__body > :first-child { margin-top: 0; }
 .tidbyte__body > :last-child { margin-bottom: 0; }
 
+/* table of contents --------------------------------------------------------- */
+/* offset anchored headings so they clear the sticky header */
+.prose :is(h2, h3) { scroll-margin-top: 4.5rem; }
+
+.toc {
+  margin: 0 0 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+  font-size: 0.9rem;
+}
+.toc > summary {
+  cursor: pointer;
+  padding: 0.55rem 0.9rem;
+  color: var(--cyan);
+  font-weight: 600;
+  list-style: none;
+}
+.toc > summary::-webkit-details-marker { display: none; }
+.toc > summary::before { content: '▸ '; }
+.toc[open] > summary::before { content: '▾ '; }
+.toc nav { padding: 0 0.9rem 0.6rem; }
+.toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--border-bright);   /* the "ruler" line */
+}
+.toc__item { margin: 0; }
+.toc__item a {
+  display: block;
+  padding: 0.25rem 0.75rem;
+  padding-left: calc(0.75rem + var(--lvl, 0) * 0.9rem);  /* indent by depth */
+  margin-left: -1px;                              /* sit on the ruler line */
+  border-left: 2px solid transparent;
+  color: var(--fg-dim);
+  border-bottom: none;
+  line-height: 1.4;
+}
+.toc__item a:hover { color: var(--fg); }
+/* deeper levels read as secondary */
+.toc__item[data-level='1'] a,
+.toc__item[data-level='2'] a { font-size: 0.85rem; }
+.toc__item a[aria-current='true'] {
+  color: var(--green);
+  border-left-color: var(--green);               /* the moving ruler mark */
+}
+
+/* desktop: sticky sidebar left of the prose (title/card stay full width above) */
+@media (min-width: 900px) {
+  .post-body--with-toc {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .post-body--with-toc .toc {
+    position: sticky;
+    top: 4.5rem;
+    margin: 0;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+  }
+}
+
 /* collapsible full-code dump ----------------------------------------------- */
 .prose details.code-dump {
   margin: 1.5rem 0;

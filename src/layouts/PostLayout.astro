@@ -8,11 +8,23 @@ import { renderMarkdown } from '../lib/markdown';
 interface Props {
   post: any;
   section: 'blog' | 'ctf';
+  headings?: { depth: number; slug: string; text: string }[];
 }
-const { post, section } = Astro.props;
+const { post, section, headings = [] } = Astro.props;
 const { data } = post;
 
 const isCtf = section === 'ctf';
+
+// Table of contents, shown for long posts (>= 3 entries) as a sticky sidebar on
+// desktop, a collapsible block on mobile. Astro auto-assigns the heading `id`s
+// these anchors point to. Posts don't all use the same heading levels (some use
+// `#`/`###`, skipping `##`), so we rank the DISTINCT levels actually present and
+// indent by that rank; this compresses skipped levels away. Keep the top three.
+const usedDepths = [...new Set(headings.map((h) => h.depth))].sort((a, b) => a - b);
+const toc = headings
+  .map((h) => ({ ...h, level: usedDepths.indexOf(h.depth) }))
+  .filter((h) => h.level <= 2);
+const showToc = toc.length >= 3;
 
 // CTF problem prompt + hints are authored as Markdown in frontmatter; render
 // them to HTML so links, bold, inline code, etc. display properly.
@@ -95,9 +107,27 @@ const older = idx < all.length - 1 ? all[idx + 1] : null;
       )
     }
 
-    <div class="prose">
-      <slot />
-    </div>
+    <div class:list={['post-body', showToc && 'post-body--with-toc']}>
+      {
+        showToc && (
+          <details class="toc" open>
+            <summary>Contents</summary>
+            <nav aria-label="Table of contents">
+              <ul>
+                {toc.map((h) => (
+                  <li class="toc__item" data-level={h.level} style={`--lvl:${h.level}`}>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </details>
+        )
+      }
+      <div class="post-body__main">
+        <div class="prose">
+          <slot />
+        </div>
 
     {
       isCtf && data.flag && (
@@ -126,5 +156,54 @@ const older = idx < all.length - 1 ? all[idx + 1] : null;
         {newer && <a href={`/${section}/${newer.id}`}>{newer.data.title} &rarr;</a>}
       </span>
     </nav>
+      </div>
+    </div>
   </article>
 </BaseLayout>
+
+{
+  showToc && (
+    <script>
+      // Scroll-spy: highlight the ToC link for the section currently in view.
+      // ponytail: rootMargin heuristic marks a heading "active" once it passes
+      // ~30% down the viewport; good enough, no per-pixel tracking needed.
+      const links = new Map<string, HTMLAnchorElement>();
+      document.querySelectorAll<HTMLAnchorElement>('.toc a[href^="#"]').forEach((a) => {
+        links.set(decodeURIComponent(a.hash.slice(1)), a);
+      });
+      const targets = [...links.keys()]
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => el !== null);
+
+      if (targets.length) {
+        let current: string | null = null;
+        const setActive = (id: string) => {
+          if (id === current) return;
+          links.forEach((a) => a.removeAttribute('aria-current'));
+          links.get(id)?.setAttribute('aria-current', 'true');
+          current = id;
+        };
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const visible = entries
+              .filter((e) => e.isIntersecting)
+              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            if (visible.length) setActive(visible[0].target.id);
+          },
+          { rootMargin: '-72px 0px -70% 0px', threshold: 0 }
+        );
+        targets.forEach((t) => observer.observe(t));
+      }
+
+      // Collapse the ToC by default on mobile; reopen it when widening to desktop.
+      const tocEl = document.querySelector<HTMLDetailsElement>('details.toc');
+      if (tocEl) {
+        const wide = window.matchMedia('(min-width: 900px)');
+        if (!wide.matches) tocEl.open = false;
+        wide.addEventListener('change', (e) => {
+          if (e.matches) tocEl.open = true;
+        });
+      }
+    </script>
+  )
+}

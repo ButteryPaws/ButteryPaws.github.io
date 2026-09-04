@@ -2,7 +2,7 @@
 title: 'Life Hack #357'   # optional — omit for a title-less note
 date: 2026-08-16
 tags: ['meta']
-draft: false
+draft: true
 ---
 
 The trick to getting a Rapido (bike-taxi) faster is to change your name on the app to a female name. 

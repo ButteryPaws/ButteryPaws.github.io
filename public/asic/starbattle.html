@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Star Battle Chip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap">
+
+<style>
+:root{
+  --paper:#E7EBF1; --surface:#FFFFFF; --sunk:#DCE2EB;
+  --text:#111722; --muted:#5B6779; --faint:#8B96A8;
+  --rule:#C6CEDA; --hair:#D6DCE5;
+  --accent:#1B5FD0; --accent-soft:#E2EAFA;
+  --amber:#9E6408; --amber-soft:#F6EBD6;
+  --good:#0F6E51; --crit:#A93529;
+  --mask:#0D1118;
+  --display:"IBM Plex Sans Condensed","Helvetica Neue",Arial,sans-serif;
+  --body:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --data:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --col:66ch;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0C1017; --surface:#141A24; --sunk:#0F141D;
+    --text:#DBE2ED; --muted:#8D9AAE; --faint:#66738A;
+    --rule:#28313F; --hair:#1E2632;
+    --accent:#6BA5FF; --accent-soft:#16233A;
+    --amber:#E0A249; --amber-soft:#2A2113;
+    --good:#3FB68B; --crit:#EE7C6F;
+    --mask:#05080D;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0C1017; --surface:#141A24; --sunk:#0F141D;
+  --text:#DBE2ED; --muted:#8D9AAE; --faint:#66738A;
+  --rule:#28313F; --hair:#1E2632;
+  --accent:#6BA5FF; --accent-soft:#16233A;
+  --amber:#E0A249; --amber-soft:#2A2113;
+  --good:#3FB68B; --crit:#EE7C6F;
+  --mask:#05080D;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--text);
+  font-family:var(--body); font-size:16.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding:0 28px 96px}
+
+/* ---------- masthead ---------- */
+header.mast{padding:56px 0 30px; border-bottom:2px solid var(--text)}
+.eyebrow{
+  font-family:var(--data); font-size:11.5px; font-weight:500;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--accent);
+  display:flex; gap:14px; flex-wrap:wrap; align-items:baseline;
+}
+.eyebrow .sep{color:var(--faint)}
+h1{
+  font-family:var(--display); font-weight:700; font-size:clamp(2.6rem,7vw,4.4rem);
+  line-height:.98; letter-spacing:-.018em; margin:.22em 0 0; text-wrap:balance;
+}
+.standfirst{
+  font-size:1.16rem; line-height:1.55; color:var(--muted);
+  max-width:60ch; margin:.85em 0 0;
+}
+.standfirst b{color:var(--text); font-weight:600}
+
+/* ---------- stat strip ---------- */
+.stats{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+  gap:0; margin:34px 0 0; border-top:1px solid var(--hair);
+}
+.stat{padding:16px 18px 15px; border-bottom:1px solid var(--hair); border-right:1px solid var(--hair)}
+.stat:last-child{border-right:0}
+.stat .k{
+  font-family:var(--data); font-size:10.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--faint); display:block;
+}
+.stat .v{
+  font-family:var(--display); font-weight:600; font-size:1.62rem;
+  line-height:1.15; margin-top:5px; font-variant-numeric:tabular-nums;
+}
+.stat .v small{font-size:.62em; font-weight:500; color:var(--muted); letter-spacing:0}
+
+/* ---------- structure ---------- */
+section{margin:64px 0 0}
+h2{
+  font-family:var(--display); font-weight:600; font-size:1.62rem;
+  letter-spacing:-.008em; margin:0 0 4px; text-wrap:balance;
+}
+h2 .num{
+  font-family:var(--data); font-size:.55em; font-weight:500; color:var(--accent);
+  letter-spacing:.08em; margin-right:.9em; vertical-align:.22em;
+}
+.deck{color:var(--muted); max-width:var(--col); margin:0 0 26px; font-size:1.02rem}
+p{max-width:var(--col); margin:1.05em 0}
+a{color:var(--accent)}
+strong{font-weight:600}
+code,.mono{font-family:var(--data); font-size:.86em}
+p code,li code,td code{
+  background:var(--sunk); padding:.1em .35em; border-radius:2px;
+  color:var(--text); white-space:nowrap;
+}
+
+/* ---------- timeline ---------- */
+.phases{display:grid; gap:0; margin-top:8px}
+.phase{
+  display:grid; grid-template-columns:104px 1fr; gap:0 26px;
+  padding:22px 0; border-top:1px solid var(--hair);
+}
+.phase:last-child{border-bottom:1px solid var(--hair)}
+.when{
+  font-family:var(--data); font-size:12px; font-weight:500; color:var(--accent);
+  letter-spacing:.03em; padding-top:5px; position:relative;
+}
+.when .yr{display:block; color:var(--faint); font-size:10.5px; letter-spacing:.1em; margin-top:2px}
+.phase h3{
+  font-family:var(--display); font-weight:600; font-size:1.12rem;
+  margin:0 0 .3em; letter-spacing:-.004em;
+}
+.phase p{margin:.3em 0 0; font-size:.97rem; max-width:62ch}
+.outcome{
+  font-family:var(--data); font-size:11.5px; color:var(--muted);
+  margin-top:10px; padding-left:12px; border-left:2px solid var(--rule);
+  line-height:1.5; max-width:62ch;
+}
+.outcome b{color:var(--text); font-weight:500}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto; margin:22px 0; border-top:1px solid var(--rule)}
+table{border-collapse:collapse; width:100%; font-size:.9rem; min-width:520px}
+th{
+  font-family:var(--data); font-weight:500; font-size:10.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--faint); text-align:left;
+  padding:10px 14px 9px; border-bottom:1px solid var(--rule); white-space:nowrap;
+}
+td{padding:11px 14px; border-bottom:1px solid var(--hair); vertical-align:top}
+td.n{font-family:var(--data); font-variant-numeric:tabular-nums; white-space:nowrap}
+td.f{font-family:var(--data); font-size:.85rem; white-space:nowrap}
+tbody tr:hover{background:var(--sunk)}
+
+/* ---------- funnel ---------- */
+.funnel{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1px; background:var(--hair); border:1px solid var(--hair); margin:24px 0;
+}
+.rung{background:var(--surface); padding:18px 18px 16px}
+.rung .q{
+  font-family:var(--display); font-weight:600; font-size:1.9rem; line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.rung .u{font-family:var(--data); font-size:11px; color:var(--faint); letter-spacing:.06em; text-transform:uppercase; margin-top:6px}
+.rung .d{font-size:.86rem; color:var(--muted); margin-top:9px; line-height:1.45}
+.rung:last-child .q{color:var(--amber)}
+
+/* ---------- morse ---------- */
+.morse{
+  background:var(--mask); border:1px solid var(--rule); padding:26px 22px 20px;
+  margin:24px 0; overflow-x:auto;
+}
+.morse svg{display:block; width:100%; min-width:640px; height:auto}
+.morse .cap{
+  font-family:var(--data); font-size:11px; color:#7E8CA3; letter-spacing:.08em;
+  display:flex; justify-content:space-between; gap:16px; margin-top:14px; flex-wrap:wrap;
+}
+.morse .decode{
+  font-family:var(--display); font-weight:600; font-size:1.5rem; color:#E8C88A;
+  letter-spacing:.16em; margin:16px 0 0;
+}
+.morse .gloss{font-family:var(--body); font-size:.92rem; color:#95A2B8; font-style:italic; margin:4px 0 0}
+
+/* ---------- grid ---------- */
+.board{
+  display:grid; grid-template-columns:repeat(11,1fr); gap:2px;
+  width:min(100%,372px); background:var(--rule); border:2px solid var(--rule);
+}
+.sq{
+  aspect-ratio:1; background:var(--surface); display:grid; place-items:center;
+  font-size:14px; color:var(--faint); font-family:var(--data);
+}
+.sq.star{background:var(--amber-soft); color:var(--amber); font-size:17px; font-weight:600}
+.boardwrap{display:grid; grid-template-columns:auto 1fr; gap:34px; align-items:start; margin:24px 0}
+.boardwrap ul{margin:0; padding-left:1.1em; max-width:48ch}
+.boardwrap li{margin:.45em 0; font-size:.95rem}
+@media (max-width:720px){.boardwrap{grid-template-columns:1fr}}
+
+/* ---------- ledger ---------- */
+.ledger{margin:24px 0; border-top:1px solid var(--rule)}
+.bug{
+  display:grid; grid-template-columns:132px 1fr; gap:0 24px;
+  padding:16px 0; border-bottom:1px solid var(--hair);
+}
+.tag{
+  font-family:var(--data); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  padding-top:4px; font-weight:500;
+}
+.tag.silent{color:var(--crit)}
+.tag.caught{color:var(--good)}
+.tag.pushed{color:var(--amber)}
+.tag.dead{color:var(--faint)}
+.bug .what{font-size:.96rem; margin:0}
+.bug .what b{font-weight:600}
+.bug .cost{font-size:.88rem; color:var(--muted); margin:.35em 0 0}
+.legend{
+  display:flex; gap:22px; flex-wrap:wrap; font-family:var(--data);
+  font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; margin:0 0 18px;
+}
+.legend span::before{content:"▪ "; }
+.legend .silent{color:var(--crit)} .legend .caught{color:var(--good)}
+.legend .pushed{color:var(--amber)} .legend .dead{color:var(--faint)}
+
+/* ---------- msgs ---------- */
+.msgs{display:grid; gap:1px; background:var(--hair); border:1px solid var(--hair); margin:24px 0}
+.msg{background:var(--surface); display:grid; grid-template-columns:1fr auto; gap:16px; padding:14px 18px; align-items:baseline}
+.msg .s{font-family:var(--data); font-size:1.02rem; font-weight:500}
+.msg.win{background:var(--amber-soft)}
+.msg.win .s{color:var(--amber); font-weight:600}
+.msg .why{font-size:.88rem; color:var(--muted); text-align:right}
+
+/* ---------- callout ---------- */
+.note{
+  border-left:3px solid var(--accent); background:var(--accent-soft);
+  padding:16px 20px; margin:26px 0; max-width:var(--col);
+}
+.note p{margin:0; font-size:.95rem; max-width:none}
+.note p + p{margin-top:.7em}
+.note .h{
+  font-family:var(--data); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); display:block; margin-bottom:6px; font-weight:500;
+}
+
+.bits{
+  font-family:var(--data); font-size:11px; line-height:1.7; word-break:break-all;
+  background:var(--sunk); padding:14px 16px; margin:18px 0; color:var(--muted);
+  border-left:3px solid var(--rule);
+}
+.bits b{color:var(--text); font-weight:500}
+
+footer{
+  margin-top:76px; padding-top:24px; border-top:2px solid var(--text);
+  font-size:.88rem; color:var(--muted); max-width:var(--col);
+}
+footer p{max-width:none; font-size:inherit}
+</style>
+<style>html{color-scheme:light dark}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">
+    <span>Field report</span><span class="sep">/</span>
+    <span>17 Aug – 4 Sep 2026</span><span class="sep">/</span>
+    <span>Jane Street ASIC puzzle</span>
+  </div>
+  <h1>The Star&nbsp;Battle Chip</h1>
+  <p class="standfirst">
+    Nineteen days from <b>“what does reverse-engineering an ASIC even mean?”</b> to a mask-level
+    layout decompiled into gates, simulated, SAT-solved, and proved complete — and the discovery
+    that the silicon is a puzzle validator with a Latin motto written on it in Morse code.
+  </p>
+
+  <div class="stats">
+    <div class="stat"><span class="k">Die</span><span class="v">200<small>×352.72 µm</small></span></div>
+    <div class="stat"><span class="k">Placements</span><span class="v">9,875</span></div>
+    <div class="stat"><span class="k">Logic cells</span><span class="v">728</span></div>
+    <div class="stat"><span class="k">Flip-flops</span><span class="v">92</span></div>
+    <div class="stat"><span class="k">Input</span><span class="v">121<small>bits</small></span></div>
+    <div class="stat"><span class="k">Answer</span><span class="v" style="color:var(--amber)">15<small>bytes</small></span></div>
+  </div>
+</header>
+
+<section>
+  <h2><span class="num">01</span>The brief</h2>
+  <p class="deck">One binary file, no names, no netlist, no source.</p>
+  <p>
+    Jane Street’s 2026 puzzle ships a single artefact: <code>puzzle.gds</code>, a GDSII stream —
+    the format a foundry receives. It is not source code and not a schematic. It is
+    <em>photomask geometry</em>: polygons on numbered layers, where layer 66 is polysilicon and
+    layer 68 is the first metal, plus thousands of placements of named library cells. Everything
+    above that level — module boundaries, signal names, the design’s intent — was compiled away.
+  </p>
+  <p>
+    The stated goal is to drive a <code>success</code> output high. The real goal, buried in the
+    README, is that <em>“you’ll need to simulate it to get your final answer”</em> — the chip emits
+    a string on <code>O[7:0]</code>, and that string is the submission. <code>success</code> is a
+    checkpoint, not the finish.
+  </p>
+  <p>
+    A <code>warmup/</code> directory carries the same design at every compilation stage — RTL,
+    netlist, placed netlist, GDS. That is the Rosetta Stone: any tool built to run the pipeline
+    backwards can be checked against ground truth before it is ever pointed at the real thing.
+  </p>
+  <div class="note">
+    <span class="h">Constraint accepted at the outset</span>
+    <p>
+      The blog permits AI for tooling and for the warm-up, and forbids feeding it the puzzle
+      files or having it write the submission. So the rule for the whole campaign was:
+      <b>build instruments, never read the evidence.</b> Every command that touched
+      <code>puzzle.gds</code> was run by hand; the answer arrived as tool output, not as
+      a model’s claim.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>Campaign</h2>
+  <p class="deck">
+    Eight working sessions. The first three build understanding, the next three build instruments,
+    the last two use them.
+  </p>
+
+  <div class="phases">
+
+    <div class="phase">
+      <div class="when">17 Aug<span class="yr">Day 1</span></div>
+      <div>
+        <h3>Framing, and Verilog from zero</h3>
+        <p>
+          Opening question — “does reverse-engineering mean recovering the original Verilog?” — is
+          answered no: the deliverable is behavioural equivalence, not textual recovery. Then
+          <code>warmup/00_source.v</code> line by line, followed by nine questions that go all the
+          way down: what is fanout, what is a net, what is a flip-flop, why does combinational
+          logic need a clock at all.
+        </p>
+        <div class="outcome">Established: <b>combinational vs sequential</b>, the DFF, the
+          <code>sky130_fd_sc_hd__dfrtp_2</code> naming scheme, and why 6 pins can carry 16 bits of state.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="when">27 Aug<span class="yr">Day 11</span></div>
+      <div>
+        <h3>Silicon literacy</h3>
+        <p>
+          A two-column annotated reference is published so question and answer sit side by side
+          instead of scrolling apart. Then the RTL→GDS pipeline — Yosys, ABC, place-and-route,
+          stream-out — and which stages are reversible. GDS is explained as “SVG, but the layers
+          are physical materials”, which is where the analogy earns its keep: an SVG layer is
+          cosmetic, a GDS layer is a fabrication step.
+        </p>
+        <div class="outcome">Two standing instructions recorded: <b>no spoilers from puzzle.gds</b>,
+          and <b>no package installs without asking</b>.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="when">28 Aug<span class="yr">Day 12</span></div>
+      <div>
+        <h3>Fighting KLayout, then escaping it</h3>
+        <p>
+          The layout viewer is opened, layer numbers (<code>64/5</code>, <code>66/20</code>)
+          decoded, and its macro IDE turns out to have a genuine defect: the Run button stays
+          bound to the wrong file no matter what is selected. Two workarounds are tried before the
+          right move — abandon the GUI, run <code>klayout -b -r script.py</code>, then abandon that
+          too for the <code>klayout</code> PyPI module and a normal venv with a debugger.
+        </p>
+        <div class="outcome"><b>tools/survey.py</b> — layer table, cell inventory, per-cell geometry dump.
+          Scripts now live in the repo and in git.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="when">30 Aug<span class="yr">Day 14</span></div>
+      <div>
+        <h3>Geometry back to a netlist</h3>
+        <p>
+          KLayout’s <code>LayoutToNetlist</code> is pointed at the warm-up GDS: conducting layers
+          declared, via layers bridged, each standard cell recovered as a subcircuit with pin names
+          read from the text labels inside it. The output is compared to the reference netlist not
+          by name — the extracted names are meaningless — but by <em>net signature</em>: each net
+          reduced to the multiset of <code>celltype.pin</code> it touches.
+        </p>
+        <div class="outcome"><b>Signature multisets identical.</b> 230/230 cells, 84/84 nets,
+          18/18 cell types. The extraction is isomorphic to ground truth.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="when">31 Aug<span class="yr">Day 15</span></div>
+      <div>
+        <h3>A graph, a simulator, and a solver</h3>
+        <p>
+          Three modules in one day. A cell library carrying Boolean expression trees; a netlist
+          parser that infers port directions from usage and exposes fan-in cones; a cycle-based
+          simulator. Then the conceptual jump — a SAT solver has no notion of time, so time is
+          turned into space. The circuit is copied once per cycle and frame <i>k</i>’s flop outputs
+          are wired to frame <i>k+1</i>’s inputs, which turns a cyclic circuit into an acyclic
+          formula. Explained with a visual artifact before any code was written.
+        </p>
+        <div class="outcome">Warm-up solved by z3 in <b>0.01 s</b> against 109 s for exhaustive
+          simulation — and cross-checked by replaying the solver’s answer through the independent simulator.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="when">1 Sep<span class="yr">Day 16</span></div>
+      <div>
+        <h3>First contact with the real die</h3>
+        <p>
+          The survey runs on <code>puzzle.gds</code>: 9,875 placements, 80 cell types, and two
+          names that belong to no library — <code>INTERNAL_3</code> and <code>INTERNAL_7</code>.
+          Fifteen cell types have no definition. A review pass strips 80 lines of speculative
+          flags from the toolchain, with the standing instruction not to cut anything the puzzle
+          might need.
+        </p>
+        <div class="outcome">Library gate added: <code>--check-lib</code> refuses to proceed while any
+          placed cell type lacks a definition, because <b>a wrong cell function corrupts every result silently</b>.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="when">2 Sep<span class="yr">Day 17</span></div>
+      <div>
+        <h3>Debugging, then the answer</h3>
+        <p>
+          The hardest day. Hand-written cell definitions are thrown out and re-derived from the
+          PDK’s own Liberty data. An undriven wire is chased for hours. Eight flip-flops turn out
+          to be the wrong type to reset to zero. Escaped Verilog identifiers silently collapse all
+          eight output bits into one port — twice, once in the reader and once in the writer. Then,
+          with the blockers cleared: 122 frames, one unique input, fifteen bytes out.
+        </p>
+        <div class="outcome"><b><code>(* TWO STARS *)</code></b> — and, hidden on a layer below the
+          die outline, a strip of Morse code.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="when">4 Sep<span class="yr">Day 19</span></div>
+      <div>
+        <h3>Proving there is nothing else</h3>
+        <p>
+          Deadline day, spent on completeness rather than the answer. Jane Street’s own reference
+          waveform is parsed and replayed through the extracted netlist. The set of messages the
+          chip can emit is enumerated by SAT until UNSAT. The 121-bit input is recognised as an
+          11×11 grid, the region map is recovered behaviourally, and the puzzle is re-solved from
+          scratch to confirm it. A forked-file sweep looks for further eggs and finds none.
+        </p>
+        <div class="outcome"><b>312/312 cycles match the reference trace.</b> Five messages, proved
+          exhaustive. 81 of 92 flip-flops identified by role.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>Reduction</h2>
+  <p class="deck">
+    Each stage discards something provably inert. The whole point is that every arrow is checkable.
+  </p>
+
+  <div class="funnel">
+    <div class="rung">
+      <div class="q">9,875</div><div class="u">placements</div>
+      <div class="d">What is physically in the top cell of the GDS.</div>
+    </div>
+    <div class="rung">
+      <div class="q">728</div><div class="u">logic cells</div>
+      <div class="d">After dissolving 8,200+ via cells and 880 fillers, taps and decaps — all
+        verified to carry no signal.</div>
+    </div>
+    <div class="rung">
+      <div class="q">92</div><div class="u">flip-flops</div>
+      <div class="d">The entire state of the machine. 695 cells and 706 nets survive cleaning.</div>
+    </div>
+    <div class="rung">
+      <div class="q">121</div><div class="u">input bits</div>
+      <div class="d">One serial stream on <code>I</code>, enable high throughout, verdict at frame 122.</div>
+    </div>
+    <div class="rung">
+      <div class="q">15</div><div class="u">bytes out</div>
+      <div class="d">Frames 122–136, then the output mask closes for good.</div>
+    </div>
+  </div>
+
+  <p>
+    The <code>success</code> cone is <strong>484 of 728 cells</strong>, and it sits entirely
+    <em>inside</em> the <code>O[7:0]</code> cone — nothing feeds the verdict without also feeding
+    the output. Thirteen flip-flops belong to the output generator alone, which is precisely the
+    region the puzzle README says can be ignored during reverse-engineering.
+  </p>
+</section>
+
+<section>
+  <h2><span class="num">04</span>The proof chain</h2>
+  <p class="deck">
+    The reason to trust the answer is not that a solver returned SAT. It is that five independent
+    methods were made to agree.
+  </p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Check</th><th>Method</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Extraction is faithful</b></td>
+        <td>Net-signature isomorphism against the warm-up’s reference netlist — name-independent</td>
+        <td class="n">230/230 cells<br>84/84 nets</td>
+      </tr>
+      <tr>
+        <td><b>Cell semantics are real</b></td>
+        <td>Library parsed from the PDK’s Liberty JSON, not hand-written; exhaustive 65,536-pair
+          self-test reproduces the warm-up RTL exactly</td>
+        <td class="n">0 mismatches</td>
+      </tr>
+      <tr>
+        <td><b>The netlist matches the original chip</b></td>
+        <td>Jane Street’s own <code>example_inputs.vcd</code> replayed through the extracted netlist,
+          comparing <code>O</code> and <code>success</code> every cycle</td>
+        <td class="n">312/312 cycles</td>
+      </tr>
+      <tr>
+        <td><b>The solver and simulator agree</b></td>
+        <td>Every z3 model replayed through the independent Python simulator; disagreement aborts
+          rather than reporting</td>
+        <td class="n">PASS</td>
+      </tr>
+      <tr>
+        <td><b>The input is unique</b></td>
+        <td>Blocking-clause enumeration over generalised cubes, run to exhaustion</td>
+        <td class="n">1 solution<br>UNSAT after</td>
+      </tr>
+      <tr>
+        <td><b>The length is minimal</b></td>
+        <td>121 cycles UNSAT, 122 SAT — pinning the protocol at exactly 121 clocked bits plus a
+          settle frame</td>
+        <td class="n">122 frames</td>
+      </tr>
+      <tr>
+        <td><b>Nothing else can be emitted</b></td>
+        <td>Message vectors blocked whole and re-solved until UNSAT, after first proving by SAT that
+          no output is possible outside frames 122–136</td>
+        <td class="n">5 messages<br>27 byte values</td>
+      </tr>
+      <tr>
+        <td><b>The recovered puzzle is the right one</b></td>
+        <td>Star Battle rebuilt from the extracted region map and solved from scratch in z3,
+          independently of the netlist</td>
+        <td class="n">1 solution,<br>identical</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="h">The check that mattered most</span>
+    <p>
+      Replaying the reference VCD initially showed <b>20 mismatches on <code>O</code>, zero on
+      <code>success</code></b>. That pattern — one signal wrong, the other right — is the signature
+      of a sampling offset rather than a logic error. Shifting the comparison by one cycle gave
+      0/312. The VCD logs <code>O</code> at the clock edge; the simulator returns the value computed
+      during the cycle. Same trajectory, different label.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>What the chip turned out to be</h2>
+  <p class="deck">121 = 11 × 11. The input was never a bit stream. It was a board.</p>
+
+  <p>
+    Read the winning input row-major into an 11×11 grid and the structure is immediate: exactly
+    two stars in every row, exactly two in every column, and no two stars touching — not even
+    diagonally. The chip is a <strong>Star Battle validator</strong>, and the messages it emits are
+    the rules of the game.
+  </p>
+
+  <div class="boardwrap">
+    <div class="board" role="img" aria-label="The 11 by 11 solution grid: 22 stars, two per row and two per column, none adjacent">
+      <div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div>
+      <div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div>
+      <div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div>
+      <div class="sq star">★</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div>
+      <div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div>
+      <div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div>
+      <div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div>
+      <div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div>
+      <div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div>
+      <div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div>
+      <div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq star">★</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div><div class="sq">·</div>
+    </div>
+    <ul>
+      <li><b>22 stars</b> — matching the winning stream’s popcount exactly.</li>
+      <li><b>Every run of 1s has length 1.</b> The two failed attempts in the reference VCD have
+        runs up to 4 and 38 stars each — nowhere near legal.</li>
+      <li>Rows, columns and no-touching alone admit <b>500+ grids</b>, but the chip accepts exactly
+        one. So it also encodes the <b>region map</b> — the irregular blobs that must each hold two stars.</li>
+      <li>The regions were recovered <b>behaviourally</b>, not from geometry: feed 121 grids each
+        holding a single star, and see which counter flip-flop moves. Eleven flops came back with
+        square-sets that tile the board.</li>
+      <li>Sizes: <span class="mono">4, 5, 6, 7, 8, 8, 9, 11, 14, 21, 28</span>. Rebuilt as a fresh
+        Star Battle and solved in z3, it has <b>one solution — the chip’s</b>.</li>
+    </ul>
+  </div>
+
+  <p>
+    The architecture then explains itself. 121 squares but only 92 flip-flops means the grid cannot
+    be stored; it must be <em>scored incrementally</em> as bits arrive:
+  </p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Count</th><th>Role</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="n">12</td><td>Shift register — the adjacency window</td>
+        <td>Only stages <span class="mono">q0, q9, q10, q11</span> tap out to logic: squares
+          <i>i−1, i−10, i−11, i−12</i>. That is left, up-right, up, up-left — <b>which is why it is
+          12 bits and not 11</b>.</td></tr>
+      <tr><td class="n">22</td><td>11 column counters, 2 bits each</td>
+        <td>Saturating: 0, 1, 2, 3 — and a fourth star still reads 3.</td></tr>
+      <tr><td class="n">22</td><td>11 region counters, 2 bits each</td>
+        <td>Recovered by the single-star sweep; an exact-cover search found only two ways to tile
+          121 squares, the columns and these.</td></tr>
+      <tr><td class="n">8</td><td>Position counter (4 row + 4 column)</td><td>Addresses the readout.</td></tr>
+      <tr><td class="n">8</td><td>Output character generator</td><td>One private flop per output bit — the characters are computed, not stored in a ROM.</td></tr>
+      <tr><td class="n">4</td><td>Readout position counter</td><td>16 positions, matching the 15-byte burst.</td></tr>
+      <tr><td class="n">1</td><td>Row counter</td><td>Clears at each row boundary — which is why it never showed up in end-of-run scans.</td></tr>
+      <tr><td class="n">3</td><td>Total star count, done flag, output enable</td><td>—</td></tr>
+      <tr><td class="n">11</td><td>Unidentified</td><td>Left unresolved at the deadline.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="msgs">
+    <div class="msg"><span class="s">TRY AGAIN</span><span class="why">any other grid — 200/200 random inputs</span></div>
+    <div class="msg"><span class="s">EMPTY SKY</span><span class="why">all zeros — no stars placed</span></div>
+    <div class="msg"><span class="s">BIG BANG</span><span class="why">all ones — every square a star</span></div>
+    <div class="msg"><span class="s">TWO NOT TOUCH</span><span class="why">the adjacency rule, stated by the chip</span></div>
+    <div class="msg win"><span class="s">(* TWO STARS *)</span><span class="why">success — two per row, two per column</span></div>
+  </div>
+  <p style="font-size:.92rem;color:var(--muted)">
+    Five, and SAT-proved to be all of them. The answer is also a joke in the house language: an
+    OCaml comment whose delimiters contain exactly two asterisks — a comment that counts its own stars.
+  </p>
+</section>
+
+<section>
+  <h2><span class="num">06</span>The die art</h2>
+  <p class="deck">
+    It was visible in the very first command run against the file, and walked past for two weeks.
+  </p>
+  <p>
+    The survey printed <code>bbox (0,-52.72; 200,300)</code>. A standard-cell array starts at
+    <i>y</i> = 0 by construction — rows stack upward from the origin. <strong>Negative <i>y</i> means
+    something was deliberately placed outside the design.</strong> That 52.72 µm strip is the whole
+    find, and no rendering was needed to spot it.
+  </p>
+  <p>
+    What is down there: 36 marks on layer <code>200/0</code>, in one row, in two widths. Quantised
+    against a 1.38 µm unit, the widths are {1, 3} and the gaps are {1, 3, 7} — with nothing left
+    over. That is the ITU Morse timing specification, not a coincidence.
+  </p>
+
+  <div class="morse">
+    <svg viewBox="-2 -3 150 14" preserveAspectRatio="none" aria-label="Morse code strip reading PER ARENAM AD ASTRA">
+      <g fill="#E8C88A">
+<rect x="0" y="0" width="1" height="2"/><rect x="2" y="0" width="3" height="2"/><rect x="6" y="0" width="3" height="2"/><rect x="10" y="0" width="1" height="2"/><rect x="14" y="0" width="1" height="2"/><rect x="18" y="0" width="1" height="2"/><rect x="20" y="0" width="3" height="2"/><rect x="24" y="0" width="1" height="2"/><rect x="32" y="0" width="1" height="2"/><rect x="34" y="0" width="3" height="2"/><rect x="40" y="0" width="1" height="2"/><rect x="42" y="0" width="3" height="2"/><rect x="46" y="0" width="1" height="2"/><rect x="50" y="0" width="1" height="2"/><rect x="54" y="0" width="3" height="2"/><rect x="58" y="0" width="1" height="2"/><rect x="62" y="0" width="1" height="2"/><rect x="64" y="0" width="3" height="2"/><rect x="70" y="0" width="3" height="2"/><rect x="74" y="0" width="3" height="2"/><rect x="84" y="0" width="1" height="2"/><rect x="86" y="0" width="3" height="2"/><rect x="92" y="0" width="3" height="2"/><rect x="96" y="0" width="1" height="2"/><rect x="98" y="0" width="1" height="2"/><rect x="106" y="0" width="1" height="2"/><rect x="108" y="0" width="3" height="2"/><rect x="114" y="0" width="1" height="2"/><rect x="116" y="0" width="1" height="2"/><rect x="118" y="0" width="1" height="2"/><rect x="122" y="0" width="3" height="2"/><rect x="128" y="0" width="1" height="2"/><rect x="130" y="0" width="3" height="2"/><rect x="134" y="0" width="1" height="2"/><rect x="138" y="0" width="1" height="2"/><rect x="140" y="0" width="3" height="2"/>
+      </g>
+      <line x1="-2" y1="5.4" x2="148" y2="5.4" stroke="#2A3444" stroke-width=".25"/>
+      <g fill="#7E8CA3" font-family="IBM Plex Mono, monospace" font-size="2.6">
+        <text x="0" y="9.2">P E R</text>
+        <text x="32" y="9.2">A R E N A M</text>
+        <text x="84" y="9.2">A D</text>
+        <text x="106" y="9.2">A S T R A</text>
+      </g>
+    </svg>
+    <div class="cap">
+      <span>layer 200/0 · y = −52.72 µm · 36 marks · unit 1.38 µm</span>
+      <span>outside the prBoundary (0,0;200,300)</span>
+    </div>
+    <p class="decode">PER ARENAM AD ASTRA</p>
+    <p class="gloss">“Through the sand, to the stars.” — <i>per aspera ad astra</i> with
+      <i>aspera</i> (hardships) swapped for <i>arenam</i> (sand). Silicon comes from sand.</p>
+  </div>
+
+  <p>
+    Which makes <code>(* TWO STARS *)</code> literal as well as self-referential: the die’s motto is
+    about reaching the stars, and the payload it hands back is two of them. The strip sits
+    deliberately <em>outside</em> the official die outline — the <code>prBoundary</code> is
+    <code>(0,0;200,300)</code> and does not contain it. It is also absent from the supplied
+    <code>layout.png</code> render, so the only way to it was the file itself.
+  </p>
+</section>
+
+<section>
+  <h2><span class="num">07</span>Ledger of failures</h2>
+  <p class="deck">
+    Kept because the interesting ones share a property: <b>the regression suite stayed green
+    through most of them.</b> A test that passes on the warm-up says nothing about a construct
+    the warm-up does not contain.
+  </p>
+
+  <div class="legend">
+    <span class="silent">Silent — would have produced a confident wrong answer</span>
+    <span class="caught">Caught by a check</span>
+    <span class="pushed">Corrected under challenge</span>
+    <span class="dead">Dead end</span>
+  </div>
+
+  <div class="ledger">
+
+    <div class="bug"><div class="tag silent">Silent</div><div>
+      <p class="what"><b>Cell library written from the naming scheme, not the datasheet.</b>
+        Fifteen missing cell types were filled in by inferring functions from names like
+        <code>o2bb2a</code>.</p>
+      <p class="cost">A wrong Boolean function corrupts every simulation and every SAT result with
+        nothing to warn you. Fixed by discarding the hand-written library entirely and parsing 70
+        cells from the PDK’s Liberty JSON — including deriving reset/set polarity from the
+        <code>ff()</code> group, and raising rather than guessing on an active-high clear.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag silent">Silent</div><div>
+      <p class="what"><b>Every flip-flop pinned to 0 at reset.</b> The design has 84
+        <code>dfrtp</code>, 4 <code>dfstp</code> and 4 <code>dfxtp</code> — a <code>dfstp</code>
+        leaves reset at <b>1</b>, and a <code>dfxtp</code> has no async control at all.</p>
+      <p class="cost">Worse than a plain bug: the solver and the simulator shared the assumption, so
+        <code>--verify</code> would have agreed with itself while both were wrong. Initial state is
+        now derived per-cell from Liberty.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag silent">Silent</div><div>
+      <p class="what"><b>Bus indices eaten from escaped identifiers.</b> The port regex stripped
+        <code>[...]</code> assuming a bus width, so <code>\O[0]</code> … <code>\O[7]</code> all
+        collapsed to one port named <code>O</code>.</p>
+      <p class="cost">Correct for <code>input [7:0] data</code>, wrong for an escaped identifier
+        where the brackets <em>are</em> the name. Present twice — once in the reader, and again in
+        the writer, which emitted the illegal <code>output O[0];</code> so the fixed reader hit the
+        same bug on the next pass.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag silent">Silent</div><div>
+      <p class="what"><b>Hierarchy counted one level deep.</b> The inventory walked only the top
+        cell, so the 21 <code>INTERNAL_3</code> and 15 <code>INTERNAL_7</code> containers hid their
+        contents.</p>
+      <p class="cost">The library gate could have <em>passed</em> while an undefined cell type sat
+        inside a container. Found by the user asking whether those cells were in the output at all.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag silent">Silent</div><div>
+      <p class="what"><b>Shift-chain detection recognised only <code>mux2</code> hold paths.</b>
+        On the puzzle, 51 of 92 flip-flops build their hold path from ordinary gates —
+        <code>nand2b</code>, <code>o21a</code>, <code>a21o</code>.</p>
+      <p class="cost">The warm-up used <code>mux2</code> exclusively, so this could never have
+        shown up there. The first fix then <em>over</em>-detected — a counter bit also reads its own
+        <code>Q</code> back — and needed a truth-table query to distinguish pass-through from
+        arithmetic. Only possible because the library carries real functions.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag silent">Silent</div><div>
+      <p class="what"><b><code>--verify</code> drove <code>rst_n</code> randomly</b>, re-asserting
+        reset on roughly half of all cycles.</p>
+      <p class="cost">The design barely left its reset state, so the equivalence check proved
+        almost nothing while reporting PASS. Related: a proposed <code>--free-init</code> mode was
+        outright unsound — it let the solver invent a starting state no reset can produce.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag caught">Caught</div><div>
+      <p class="what"><b>A missing pin connection silently skipped 8 of 63 cells.</b></p>
+      <p class="cost">Fault injection showed one deleted connection cascading through the design
+        with no diagnostic — and <code>clean.py --verify</code> comparing two identically-broken
+        simulations and printing PASS. A warning now fires inside <code>step()</code>, so every
+        caller inherits it.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag caught">Caught</div><div>
+      <p class="what"><b>“ALL GREEN” printed over three real failures.</b> <code>set -e</code> does
+        not fire inside a pipeline.</p>
+      <p class="cost">Three regression steps had produced no output at all. Same session also broke
+        <code>survey.py</code> by re-opening a docstring in a replacement — caught only because a
+        syntax check ran.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag pushed">Corrected</div><div>
+      <p class="what"><b>“Fixed” a floating net that was never fixed.</b> An undriven wire,
+        <code>n1447</code>, was chased across a whole session. Three <em>other</em> bugs were found
+        and fixed along the way, the count went from 15 problems to 1, and that got reported in a
+        way that read as resolution.</p>
+      <p class="cost">Called out directly — <i>“Are you sure it’s all correct now?”</i> — and
+        retracted. It was then settled properly and empirically: 3,000 random cycles with the net
+        forced to 0 and to 1 produce identical outputs, so it cannot affect anything. Its forward
+        cone contains zero sequential cells.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag pushed">Corrected</div><div>
+      <p class="what"><b>A false negative that hid the one place it <em>did</em> matter.</b> The
+        check “is this net in any output’s cone?” compared a <em>net</em> name against a set of
+        <em>cell</em> names — it could never match.</p>
+      <p class="cost">The net reaches <code>O[1]</code> and <code>O[4]</code>. That is exactly why a
+        fifth message came out two different ways in two runs. The enumeration now leaves the net
+        free per-frame and reports the indeterminacy rather than hiding it.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag pushed">Corrected</div><div>
+      <p class="what"><b>“J S C” — a company acronym read out of three grid regions.</b></p>
+      <p class="cost">One region is unmistakably a blocky <b>S</b>. The second was pattern-matched,
+        the third forced — a shape with a full bottom bar and a stray square called a <b>J</b> —
+        and then the reading order was chosen to produce the acronym. Fitting the data to the
+        conclusion. Retracted under questioning: one letter spells nothing, and an S is the most
+        likely shape to appear by chance.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag dead">Dead end</div><div>
+      <p class="what"><b>Six identically-named scopes in the reference VCD, pushed four times.</b></p>
+      <p class="cost">Viewers merge same-named scopes, so the file renders exactly like the
+        conventional form — there is no channel there to hide anything in. Settled by generating two
+        rewritten VCDs and loading all three side by side. It was a generator quirk.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag dead">Dead end</div><div>
+      <p class="what"><b>Hunting the “two stars” as drawn geometry.</b></p>
+      <p class="cost">A vertex histogram showed every shape on every layer was a 4-gon, killing
+        star-shaped art. Metals and placement were rendered — power straps and functional clumps.
+        All 893 text objects turned out to be standard-cell pin labels. The actual find needed none
+        of it, only the bounding box.</p>
+    </div></div>
+
+    <div class="bug"><div class="tag dead">Dead end</div><div>
+      <p class="what"><b>KLayout’s macro IDE ran the wrong file, permanently.</b></p>
+      <p class="cost">Tree selection, saving, reopening, F5 — none of it moved the run binding.
+        Never diagnosed. Escaped via a one-line loader stub, then abandoned for batch mode, then for
+        the PyPI module. The right call, two workarounds late.</p>
+    </div></div>
+
+  </div>
+
+  <div class="note">
+    <span class="h">Six course corrections came from the user, not from a test</span>
+    <p>
+      <i>“Don’t give away any answers — I need to work it out myself.”</i> ·
+      <i>“Don’t perform any installations yourself.”</i> ·
+      <i>“Why not patch directly, why write a Py script to do this?”</i> ·
+      <i>“You can read the file, why are you doing these tricks?”</i> ·
+      <i>“Do you really need a new script instead of adding it to survey.py?”</i> ·
+      <i>“Why are you holding <code>rst_n</code>=1?”</i>
+    </p>
+    <p>
+      The last one had no good answer — it was a convenience carried over from the warm-up and
+      never re-examined. Investigating it exposed the unsound <code>--free-init</code> mode.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span>The instrument</h2>
+  <p class="deck">Thirteen files, 4,033 lines of Python. Everything runs from the command line.</p>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Tool</th><th>Lines</th><th>Does</th></tr></thead>
+    <tbody>
+      <tr><td class="f">survey.py</td><td class="n">404</td><td>Layer table, recursive cell inventory, per-cell geometry dump, library gate (<code>--check-lib</code>), inert-cell detection by height and power pins</td></tr>
+      <tr><td class="f">extract.py</td><td class="n">206</td><td>GDS → Verilog netlist via <code>LayoutToNetlist</code>, via flattening, filler stripping</td></tr>
+      <tr><td class="f">celllib.py</td><td class="n">195</td><td>Cell semantics parsed from the PDK’s Liberty JSON — no hand-written functions</td></tr>
+      <tr><td class="f">crosscheck.py</td><td class="n">387</td><td>Liberty function parser, shared with the cell library</td></tr>
+      <tr><td class="f">netlist.py</td><td class="n">487</td><td>Parser and graph: direction inference, driver/sink invariants, backward and forward cones</td></tr>
+      <tr><td class="f">clean.py</td><td class="n">391</td><td>Graph rewrites — directions, clock-tree collapse, structural net naming — with equivalence verification</td></tr>
+      <tr><td class="f">sim.py</td><td class="n">627</td><td>Cycle-based simulator: topological evaluation, per-cell reset semantics, register recovery, CSV output</td></tr>
+      <tr><td class="f">solve.py</td><td class="n">558</td><td>z3 bounded model checking: unrolling, cube generalisation, all-solutions enumeration, VCD emission</td></tr>
+      <tr><td class="f">sim_special.py</td><td class="n">249</td><td>Proves the output-message set complete by enumerating to UNSAT</td></tr>
+      <tr><td class="f">vcd.py</td><td class="n">125</td><td>VCD → CSV, for replaying the reference trace against the extraction</td></tr>
+      <tr><td class="f">sweep.py</td><td class="n">158</td><td>Batch stimulus runs with randomised tails</td></tr>
+      <tr><td class="f">extract_cells.py</td><td class="n">167</td><td>PDK cell data extraction</td></tr>
+      <tr><td class="f">compare_netlists.py</td><td class="n">79</td><td>Name-independent structural isomorphism check</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="bits">
+    <b>The winning stimulus</b> — 121 bits, <code>enable</code> and <code>rst_n</code> high throughout,
+    <code>success</code> at frame 122:<br><br>
+    0000000101010000100000000000010101010000000000001010000001000001000000100000101000010000000100000010000010010001010000000
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span>Left open</h2>
+  <p>
+    <strong>Eleven of 92 flip-flops</strong> were never assigned a role. The census covers the shift
+    register, both counter banks, the position and readout counters, the character generator and the
+    flags — the remainder was not chased before the deadline.
+  </p>
+  <p>
+    <strong>One net has no driver.</strong> Its geometry is two cell input pins joined by a single
+    top-level metal wire with vias only at the ends; no third cell’s geometry touches it, every
+    conducting layer in that region is registered, and nothing lies within 400 nm. It is either a
+    genuine floating net in the design or an extraction gap that could not be measured. Either way
+    it was proved inert for <code>success</code>, and its only reach — two bits of one non-winning
+    message — is reported as indeterminate rather than papered over.
+  </p>
+  <p>
+    <strong>Two of the three “letterform” regions were a false reading</strong>, withdrawn. Whether
+    the remaining S is intentional is unknown and probably unknowable.
+  </p>
+  <p>
+    <strong>The final completeness query</strong> — the message alphabet with <code>enable</code> and
+    <code>rst_n</code> both left free, roughly 142,000 variables over 200 frames — was still running
+    when submissions closed. The held-<code>enable</code> version had already returned UNSAT.
+  </p>
+</section>
+
+<footer>
+  <p>
+    Compiled from a 3,714-record Claude Code session log spanning 17 August – 4 September 2026.
+    Figures are quoted from tool output in that transcript, not reconstructed.
+  </p>
+  <p style="margin-top:.8em">
+    Per the puzzle’s stated policy, tooling was fair game and the submission prose was not — this
+    document is a record of the work, not a submission draft.
+  </p>
+</footer>
+
+</div>
+</body>
+</html>

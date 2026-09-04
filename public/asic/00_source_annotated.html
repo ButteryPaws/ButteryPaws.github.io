@@ -1,0 +1,1130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+</head>
+<body>
+<title>Annotated adder_demo</title>
+
+<style>
+  :root {
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+    --serif: Charter, "Bitstream Charter", "Iowan Old Style", "Source Serif 4", Georgia, "Liberation Serif", serif;
+
+    --ground: #F6F8FB;
+    --surface: #FFFFFF;
+    --surface-sunk: #EEF1F6;
+    --ink: #131820;
+    --ink-soft: #48525F;
+    --ink-faint: #7C8798;
+    --rule: #DBE1EA;
+    --rule-soft: #E9EDF3;
+    --accent: #0B62C4;
+    --accent-ink: #094F9E;
+    --accent-soft: #E7F0FB;
+    --amber: #8A5100;
+    --amber-soft: #FBF1E0;
+    --amber-rule: #E8CD9E;
+    --code-bg: #F2F4F8;
+    --code-ink: #202834;
+    --kw: #8A3FA8;
+    --num: #A2570B;
+    --port: #0B62C4;
+    --com: #7C8798;
+    --shadow: 0 1px 2px rgba(19, 24, 32, .05), 0 8px 24px -12px rgba(19, 24, 32, .18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0D1218;
+      --surface: #151C25;
+      --surface-sunk: #101720;
+      --ink: #E3E9F1;
+      --ink-soft: #A2AEBE;
+      --ink-faint: #6D7B8D;
+      --rule: #26313E;
+      --rule-soft: #1D2632;
+      --accent: #6BAAF2;
+      --accent-ink: #96C4F7;
+      --accent-soft: #15263A;
+      --amber: #E3AC63;
+      --amber-soft: #241C11;
+      --amber-rule: #4A3A1F;
+      --code-bg: #0F151D;
+      --code-ink: #D5DDE8;
+      --kw: #C79BE0;
+      --num: #E0A264;
+      --port: #6BAAF2;
+      --com: #64717F;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -14px rgba(0, 0, 0, .7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0D1218;
+    --surface: #151C25;
+    --surface-sunk: #101720;
+    --ink: #E3E9F1;
+    --ink-soft: #A2AEBE;
+    --ink-faint: #6D7B8D;
+    --rule: #26313E;
+    --rule-soft: #1D2632;
+    --accent: #6BAAF2;
+    --accent-ink: #96C4F7;
+    --accent-soft: #15263A;
+    --amber: #E3AC63;
+    --amber-soft: #241C11;
+    --amber-rule: #4A3A1F;
+    --code-bg: #0F151D;
+    --code-ink: #D5DDE8;
+    --kw: #C79BE0;
+    --num: #E0A264;
+    --port: #6BAAF2;
+    --com: #64717F;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -14px rgba(0, 0, 0, .7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1340px; margin: 0 auto; padding: 0 clamp(1rem, 3vw, 2.5rem); }
+
+  /* ---------- nav ---------- */
+
+  nav {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-inner {
+    display: flex; align-items: center; gap: 1rem 1.25rem; flex-wrap: wrap;
+    padding-block: .7rem;
+  }
+  .nav-mark {
+    font-family: var(--mono); font-size: .8rem; font-weight: 600;
+    letter-spacing: .04em; color: var(--ink); white-space: nowrap;
+  }
+  .nav-mark span { color: var(--ink-faint); font-weight: 400; }
+  .chips { display: flex; gap: .3rem; flex-wrap: wrap; margin-left: auto; }
+  .chips a {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .03em;
+    color: var(--ink-soft); text-decoration: none;
+    padding: .2rem .45rem; border-radius: 3px; border: 1px solid transparent;
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .chips a:hover { background: var(--accent-soft); color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+  .chips a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* ---------- header ---------- */
+
+  header.page { padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(1.75rem, 4vw, 2.75rem); }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .16em; color: var(--ink-faint); margin-bottom: 1rem;
+  }
+  h1 {
+    font-family: var(--mono); font-weight: 600;
+    font-size: clamp(1.9rem, 4.5vw, 3rem); line-height: 1.1;
+    letter-spacing: -.02em; text-wrap: balance; margin-bottom: 1.1rem;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .standfirst {
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem); color: var(--ink-soft);
+    max-width: 62ch; text-wrap: pretty;
+  }
+  .filepath {
+    display: inline-block; margin-top: 1.5rem;
+    font-family: var(--mono); font-size: .78rem; color: var(--ink-faint);
+    background: var(--surface-sunk); border: 1px solid var(--rule);
+    padding: .3rem .6rem; border-radius: 4px;
+  }
+
+  .howto {
+    display: grid; gap: .9rem 2rem; grid-template-columns: 1fr;
+    margin-top: 2.25rem; padding: 1.1rem 1.25rem;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 6px; box-shadow: var(--shadow);
+  }
+  @media (min-width: 760px) { .howto { grid-template-columns: 1fr 1fr 1fr; } }
+  .howto div { font-size: .92rem; color: var(--ink-soft); }
+  .howto strong {
+    display: block; font-family: var(--mono); font-size: .7rem;
+    text-transform: uppercase; letter-spacing: .12em;
+    color: var(--ink-faint); font-weight: 500; margin-bottom: .3rem;
+  }
+
+  /* ---------- sections ---------- */
+
+  section.part { padding-block: clamp(2.25rem, 5vw, 3.5rem); border-top: 1px solid var(--rule); }
+  .part-head { margin-bottom: 2.25rem; }
+  .part-num {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: .5rem;
+  }
+  h2 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.2;
+    letter-spacing: -.01em; text-wrap: balance;
+  }
+  h2 code { font-size: .82em; }
+  .part-sub { color: var(--ink-soft); margin-top: .5rem; max-width: 68ch; }
+
+  h3 {
+    font-family: var(--mono); font-weight: 600; font-size: .8rem;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: var(--ink); margin: 2rem 0 .75rem;
+  }
+  h3:first-child { margin-top: 0; }
+
+  /* ---------- the side-by-side block ---------- */
+
+  .block { display: grid; gap: 1.25rem; grid-template-columns: 1fr; margin-bottom: 2.75rem; }
+  @media (min-width: 1080px) {
+    .block { grid-template-columns: minmax(0, 41fr) minmax(0, 59fr); gap: 2.25rem; align-items: start; }
+    .code-col { position: sticky; top: 4.25rem; }
+  }
+  .notes > * + * { margin-top: .9rem; }
+  .notes p, .notes li { max-width: 70ch; }
+  .notes p { color: var(--ink-soft); }
+  .notes p strong, .notes li strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- code ---------- */
+
+  .code {
+    font-family: var(--mono); font-size: .78rem; line-height: 1.75;
+    background: var(--code-bg); color: var(--code-ink);
+    border: 1px solid var(--rule); border-radius: 6px;
+    overflow-x: auto; padding: .85rem 0;
+  }
+  .code .cap {
+    display: block; padding: 0 1rem .7rem; margin-bottom: .55rem;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink-faint); font-size: .7rem; letter-spacing: .05em;
+  }
+  .code .row { display: flex; white-space: pre; min-width: max-content; }
+  .code .row:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+  .code .ln {
+    flex: 0 0 auto; width: 3.1em; padding-right: 1em; text-align: right;
+    color: var(--ink-faint); opacity: .7; user-select: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .code .lc { flex: 1 1 auto; padding-right: 1.25rem; }
+  .code .row.hot { background: color-mix(in srgb, var(--accent) 11%, transparent); }
+  .code .row.hot .ln { color: var(--accent); opacity: 1; font-weight: 600; }
+  .tk-kw { color: var(--kw); }
+  .tk-num { color: var(--num); }
+  .tk-port { color: var(--port); }
+  .tk-com { color: var(--com); font-style: italic; }
+
+  .figure {
+    font-family: var(--mono); font-size: .74rem; line-height: 1.45;
+    background: var(--surface-sunk); border: 1px solid var(--rule);
+    border-radius: 6px; padding: 1.1rem 1.25rem; overflow-x: auto;
+    color: var(--ink-soft); white-space: pre;
+  }
+
+  code {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--surface-sunk); border: 1px solid var(--rule-soft);
+    padding: .06em .32em; border-radius: 3px; color: var(--ink);
+    word-break: break-word;
+  }
+
+  /* ---------- Q&A cards ---------- */
+
+  .qa {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 5px; padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow); scroll-margin-top: 5rem;
+  }
+  .qa > * + * { margin-top: .8rem; }
+  .qa-head { display: flex; gap: .7rem; align-items: baseline; }
+  .qnum {
+    flex: 0 0 auto; font-family: var(--mono); font-size: .68rem; font-weight: 600;
+    letter-spacing: .08em; color: var(--accent-ink);
+    background: var(--accent-soft); border-radius: 3px; padding: .18em .45em;
+  }
+  .qtext { font-style: italic; color: var(--ink); font-size: 1rem; max-width: none; }
+  .qa p { color: var(--ink-soft); }
+
+  .trap {
+    background: var(--amber-soft); border: 1px solid var(--amber-rule);
+    border-radius: 5px; padding: .9rem 1.1rem; scroll-margin-top: 5rem;
+  }
+  .trap > * + * { margin-top: .6rem; }
+  .trap .tlabel {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--amber); font-weight: 600;
+  }
+  .trap p { color: var(--ink-soft); }
+
+  /* ---------- lists & tables ---------- */
+
+  ul, ol { padding-left: 1.15rem; }
+  li + li { margin-top: .4rem; }
+  li { color: var(--ink-soft); }
+  li::marker { color: var(--ink-faint); }
+
+  .tbl { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .55rem .85rem; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th {
+    font-family: var(--mono); font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-faint); font-weight: 500;
+    background: var(--surface-sunk); border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  td { color: var(--ink-soft); }
+  td:first-child { font-family: var(--mono); font-size: .82em; color: var(--ink); white-space: nowrap; }
+
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  footer.page {
+    border-top: 1px solid var(--rule); padding: 2.5rem 0 4rem;
+    color: var(--ink-faint); font-size: .85rem;
+  }
+  footer.page p { max-width: 70ch; }
+  footer.page p + p { margin-top: .7rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+  html { scroll-behavior: smooth; }
+</style>
+
+<nav>
+  <div class="wrap nav-inner">
+    <div class="nav-mark">00_source.v <span>/ annotated</span></div>
+    <div class="chips">
+      <a href="#foundations">Foundations</a>
+      <a href="#q1">Q1</a><a href="#q2">Q2</a><a href="#q3">Q3</a>
+      <a href="#q4">Q4</a><a href="#q5">Q5</a><a href="#q6">Q6</a>
+      <a href="#q7">Q7</a><a href="#q8">Q8</a><a href="#q9">Q9</a>
+      <a href="#glossary">Glossary</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<header class="page">
+  <div class="eyebrow">Jane Street ASIC puzzle · warm-up</div>
+  <h1>Annotated <em>adder_demo</em></h1>
+  <p class="standfirst">Every line of the warm-up Verilog, explained from zero hardware background — with each question you asked sitting next to the line that provoked it.</p>
+  <div class="filepath">warmup/00_source.v · 59 lines · 4 modules</div>
+
+  <div class="howto">
+    <div><strong>Left column</strong>The source. It sticks in place while you read, so the code stays on screen.</div>
+    <div><strong>Right column</strong>What those lines mean, plus what they become in silicon.</div>
+    <div><strong>Blue cards</strong>Your nine questions, answered where they belong. Jump via the chips above.</div>
+  </div>
+</header>
+
+<!-- ==================== FOUNDATIONS ==================== -->
+
+<section class="part" id="foundations">
+  <div class="part-head">
+    <div class="part-num">Before the code</div>
+    <h2>Four ideas that make everything else obvious</h2>
+    <p class="part-sub">Several of your questions have the same root. Read this once and the line-by-line notes will land much harder.</p>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="figure">      Verilog                Silicon
+   ┌───────────┐          ┌───────────┐
+   │  what you │  synth   │ what gets │
+   │   write   │ ───────▶ │  printed  │
+   └───────────┘          └───────────┘
+    a DESCRIPTION          transistors,
+    of a circuit           wires, cells
+
+   not instructions that "run"</pre>
+    </div>
+    <div class="notes">
+      <h3>1 · Verilog is not a programming language</h3>
+      <p>It looks like one, and that is the single biggest source of confusion. You are not writing instructions that execute in order. You are writing a <strong>description of a physical circuit</strong> that a tool called a <strong>synthesizer</strong> will build out of real transistors.</p>
+      <p>Every line either describes some wires, some gates, or some memory. There is no "run". The whole thing exists simultaneously and continuously, like plumbing — if you change an input, outputs start changing a fraction of a nanosecond later, forever, without anything being "called".</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="figure">COMBINATIONAL          SEQUENTIAL
+ ┌────────┐             ┌────────┐
+ │ gates  │             │ flops  │
+ └────────┘             └────────┘
+ output = f(inputs now)  remembers
+ no memory               needs a clock
+ AND, adder, compare     registers, counters</pre>
+    </div>
+    <div class="notes">
+      <h3>2 · Two kinds of circuit, and everything follows</h3>
+      <ul>
+        <li><strong>Combinational logic</strong> — the output is a pure function of the inputs <em>right now</em>. Change an input and the output follows after a tiny propagation delay. No memory. AND gates, adders, comparators.</li>
+        <li><strong>Sequential logic</strong> — it has <strong>memory</strong>. It remembers something between clock ticks. Built from flip-flops.</li>
+      </ul>
+      <p>Almost every Verilog rule you are about to meet (<code>wire</code> vs <code>reg</code>, <code>=</code> vs <code>&lt;=</code>, <code>assign</code> vs <code>always</code>) is really just "which of these two are you describing?"</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="figure">        ┌─────────┐
+   D ──▶│         │──▶ Q
+        │   DFF   │
+ CLK ──▶│         │
+        └─────────┘
+
+  with a reset pin:
+
+        ┌───────────┐
+   D ──▶│           │──▶ Q
+        │  DFF w/   │
+ CLK ──▶│   reset   │
+RESET_B▶│           │
+        └───────────┘</pre>
+    </div>
+    <div class="notes">
+      <h3>3 · The DFF — the atom of all state</h3>
+      <p>A <strong>DFF</strong> is a <strong>D Flip-Flop</strong>: a one-bit memory cell, and the answer to "what is a DFF" in <a href="#q5">Q5</a>.</p>
+      <p>Its entire behaviour is one sentence: <strong>at the instant the clock goes from 0 to 1, whatever is on <code>D</code> is captured and appears on <code>Q</code>. The rest of the time <code>Q</code> holds steady no matter what <code>D</code> does.</strong></p>
+      <p>That's it. That is the whole basis of digital state — a CPU register, a counter, RAM, all just piles of these. "D" is historical, for <em>data</em> (or <em>delay</em>).</p>
+      <p><code>RESET_B</code> forces <code>Q</code> to 0 immediately, regardless of the clock. The <code>_B</code> means "bar", i.e. inverted, i.e. <strong>active-low</strong>: the reset <em>happens</em> when the pin is <strong>0</strong>. Same convention as <code>rst_n</code>.</p>
+      <div class="trap">
+        <div class="tlabel">Why active-low?</div>
+        <p>A physical reason: on power-up, an undriven wire tends to drift toward ground. Active-low reset means a chip powering up with nothing driving it defaults to <em>being held in reset</em> rather than <em>running on garbage</em>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="1" data-plain="1">sky130_fd_sc_hd__dfrtp_2
+└──┬──┘ └┘ └┘ └┘  └─┬─┘ │
+   │     │  │  │    │   └── drive strength
+   │     │  │  │    └────── the cell itself
+   │     │  │  └─────────── high density
+   │     │  └────────────── standard cell
+   │     └───────────────── foundry
+   └─────────────────────── SkyWater 130nm</pre>
+      <div style="height:1rem"></div>
+      <pre class="code" data-start="433" data-file="warmup/01_netlist.v">sky130_fd_sc_hd__dfrtp_2 \sr_a/_16_  (.CLK(clknet_1_1__leaf_clk),
+    .D(\sr_a/_00_ ),
+    .RESET_B(rst_n),
+    .Q(\a_reg[0] ));</pre>
+    </div>
+    <div class="notes">
+      <h3>4 · Standard cells, and that ugly name</h3>
+      <p>Chip designers do not lay out transistors by hand. The foundry ships a <strong>standard cell library</strong>: a catalogue of pre-drawn, pre-verified building blocks — an AND gate, a NOR gate, a flip-flop — each already drawn as polygons ready to print on silicon. Synthesis converts your Verilog into a shopping list of these cells plus a wiring diagram.</p>
+      <div class="tbl"><table>
+        <tr><th>Piece</th><th>Meaning</th></tr>
+        <tr><td>sky130</td><td>SkyWater 130&nbsp;nanometre process — the open-source PDK, the one TinyTapeout uses</td></tr>
+        <tr><td>fd</td><td>"foundry" — SkyWater's own cells</td></tr>
+        <tr><td>sc</td><td>standard cell</td></tr>
+        <tr><td>hd</td><td><strong>h</strong>igh <strong>d</strong>ensity variant of the library (versus high-speed, low-power…)</td></tr>
+        <tr><td>dfrtp</td><td>the cell: <strong>d</strong>-<strong>f</strong>lipflop, <strong>r</strong>eset, <strong>t</strong>rue output (gives <code>Q</code>, not <code>Q̄</code>), <strong>p</strong>ositive-edge clock</td></tr>
+        <tr><td>_2</td><td><strong>drive strength</strong> — a "size 2" version with bigger transistors that push harder into heavier loads. Same logic, physically larger.</td></tr>
+      </table></div>
+      <p>The second block is a real instance from your netlist. Read it as: <em>place one flip-flop cell, name this copy <code>sr_a/_16_</code>, hook CLK to the clock net, D to the wire <code>sr_a/_00_</code>, reset to <code>rst_n</code>, and let its Q drive the wire <code>a_reg[0]</code>.</em></p>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="1" data-file="cell histogram — 01_netlist.v" data-plain="1">  93  tapvpwrvgnd_1   ← filler
+  58  decap_3         ← filler
+  16  mux2_1          ← 2-input multiplexers
+  16  dfrtp_2         ← flip-flops
+   8  nor2_2
+   7  and2_2
+   5  xor2_2
+   5  or2_2
+   5  a31o_2
+   4  nand2_2
+   3  xnor2_2
+   3  clkbuf_16       ← clock buffers
+   2  and4bb_2
+   1  o21bai_2  and3_2  a21o_2
+   1  a21boi_2  a21bo_2</pre>
+    </div>
+    <div class="notes">
+      <h3>5 · The histogram <span style="color:var(--ink-faint);font-weight:400;text-transform:none;letter-spacing:0">— second half of Q5</span></h3>
+      <p>This is just a count of cell types in the netlist — a <strong>bill of materials for the chip</strong>. I produced it by grepping <code>01_netlist.v</code> and tallying.</p>
+      <p>When reverse-engineering, this is usually the very first move. You do not yet know what the circuit <em>does</em>, but "there are 16 flip-flops" instantly tells you the design has <strong>16 bits of state</strong>, which massively constrains what it could possibly be.</p>
+      <p><strong>Ignore the top two rows.</strong> <code>tapvpwrvgnd</code> cells tie the silicon substrate to power to prevent a failure mode called latch-up; <code>decap</code> cells are little capacitors that steady the power supply. Neither does any logic. They just fill empty space.</p>
+      <div class="trap">
+        <div class="tlabel">The count that confirms everything</div>
+        <p>The source says <code>parallel_out</code> is <code>[7:0]</code> — 8 bits of memory — and <code>shift_register</code> is instantiated <strong>twice</strong>. 8 × 2 = <strong>16</strong> one-bit memory cells. The netlist has exactly 16 <code>dfrtp_2</code>. Source and silicon agree. That is what the "✔" meant.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== MODULE 1 ==================== -->
+
+<section class="part">
+  <div class="part-head">
+    <div class="part-num">Lines 1–14 · module 1 of 4</div>
+    <h2><code>shift_register</code> — the piece with memory</h2>
+    <p class="part-sub">Instantiated twice later, so the netlist contains two complete copies of everything in here. This is where Q1 through Q5 live.</p>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="1" data-hot="1,2,3,4,5,6,7">module shift_register (
+    input  wire       clk,
+    input  wire        rst_n,
+    input  wire        en,
+    input  wire        serial_in,
+    output reg  [7:0]  parallel_out
+);</pre>
+    </div>
+    <div class="notes">
+      <h3>The port list</h3>
+      <ul>
+        <li><strong>L1</strong> — declares a reusable module. It gets instantiated twice at L42 and L47, so the synthesized netlist contains <strong>two copies</strong> of everything inside — flattened, with no module boundary surviving into the GDS.</li>
+        <li><strong>L2</strong> <code>clk</code> — the clock input. See <a href="#q1">Q1</a>.</li>
+        <li><strong>L3</strong> <code>rst_n</code> — active-<strong>low</strong> reset. The <code>_n</code> suffix is a naming convention, not syntax; the polarity is established by how it is used on L9.</li>
+        <li><strong>L4</strong> <code>en</code> — enable. Nothing happens on a clock edge unless this is high. This one innocent signal is responsible for 16 extra cells; see <a href="#q5">Q5</a>.</li>
+        <li><strong>L5</strong> <code>serial_in</code> — the one-bit-per-cycle data input.</li>
+        <li><strong>L6</strong> <code>output reg [7:0] parallel_out</code> — an 8-bit output, declared <code>reg</code> rather than <code>wire</code>. This is the module's state: <strong>8 flip-flops</strong>. See <a href="#q2">Q2</a> for what <code>reg</code> actually means, and <a href="#q9">Q9</a> for what <code>[7:0]</code> means.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="1" data-hot="2">module shift_register (
+    input  wire       clk,</pre>
+      <div style="height:1rem"></div>
+      <pre class="figure">clk ──▶[buf]──┬──▶[buf]──┬──▶ flop
+              │          ├──▶ flop
+              │          ├──▶ flop
+              │          └──▶ flop
+              └──▶[buf]──┬──▶ flop
+                         └──▶ ...
+
+ a balanced tree, so every flop
+ sees the edge at the same instant</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q1">
+        <div class="qa-head"><span class="qnum">Q1</span><p class="qtext">What is fanout, fat routing? What is a clock net?</p></div>
+
+        <p><strong>Fanout</strong> is how many input pins a single output drives. An output feeding 3 gates has a fanout of 3.</p>
+        <p>Why it matters: every input pin is a tiny capacitor. Driving one is easy; driving fifty means charging fifty capacitors through one small transistor, which is slow — like one person pushing fifty shopping trolleys. So high-fanout signals get <strong>buffers</strong> inserted: a tree of amplifier cells that splits the load. The <code>3 × clkbuf_16</code> in the histogram are exactly that (<code>_16</code> = very high drive strength).</p>
+
+        <p>A <strong>clock net</strong> is the wire carrying <code>clk</code>. It is special because it must reach <strong>every single flip-flop</strong> — all 16 here — and, critically, arrive at all of them <em>at nearly the same instant</em>. If one flop sees the edge noticeably later than its neighbour, it may capture the <em>new</em> value instead of the <em>old</em> one, and a shift register quietly corrupts itself. That spread is called <strong>clock skew</strong>, and a whole place-and-route stage ("clock tree synthesis") exists purely to minimise it. That is where <code>clknet_1_1__leaf_clk</code> in the netlist came from: the tool replaced your raw <code>clk</code> with the output of a balanced buffer tree.</p>
+
+        <p><strong>Fat routing</strong> means physically wider metal wires. Wider metal has lower resistance, so less delay and less skew. Since the clock is the most timing-critical net on the chip, it is usually drawn wider than ordinary signal wires and often on a dedicated upper metal layer.</p>
+
+        <div class="trap">
+          <div class="tlabel">Use this on the real puzzle</div>
+          <p>Open <code>puzzle.gds</code> in KLayout and look for the one net that is visibly wider than everything else and branches in a tree to a huge number of cells. That is the clock, found in ten seconds. Same trick for reset. Identifying those two first removes an enormous amount of visual noise.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="6" data-hot="6,8">    output reg  [7:0]  parallel_out
+);
+    always @(posedge clk or negedge rst_n) begin</pre>
+      <div style="height:1rem"></div>
+      <pre class="code" data-start="19" data-file="the other style — L19/L21">    output wire [8:0] sum
+);
+    assign sum = a + b;</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q2">
+        <div class="qa-head"><span class="qnum">Q2</span><p class="qtext">What is the difference between a wire output and a reg output? What is an always block?</p></div>
+
+        <p>Verilog has two ways to describe hardware, and the <code>wire</code>/<code>reg</code> choice simply records which one you used.</p>
+
+        <p><strong>Continuous assignment</strong> — for combinational logic:</p>
+        <p>An <code>assign</code> is not "compute a+b once". It means <em>there is permanently a physical adder here whose output is welded to <code>sum</code></em>. If <code>a</code> changes at 3pm, <code>sum</code> changes at 3pm plus a few hundred picoseconds. Forever. Targets of <code>assign</code> must be declared <code>wire</code>.</p>
+
+        <p><strong>Procedural block</strong> — an <code>always</code> block is a chunk of behaviour that re-evaluates whenever something in its trigger list changes. Inside it you may use <code>if</code>/<code>else</code>/<code>case</code>, which reads like software — but the synthesizer's job is to work out what <em>circuit</em> would produce that behaviour. Anything assigned inside an <code>always</code> block must be declared <code>reg</code>.</p>
+
+        <div class="trap">
+          <div class="tlabel">The naming trap</div>
+          <p><code>reg</code> does <strong>not</strong> mean "register". It is a badly-named leftover meaning only <em>"assigned procedurally"</em>. Whether you actually get flip-flops depends entirely on the sensitivity list:</p>
+          <p><code>always @(posedge clk)</code> → clocked, real flip-flops.<br>
+             <code>always @(*)</code> → combinational, just gates, no memory at all.</p>
+          <p>SystemVerilog fixed this by introducing <code>logic</code>, which covers both cases and spares everyone the confusion.</p>
+        </div>
+
+        <p>So on <strong>L6</strong>, <code>parallel_out</code> is <code>reg</code> purely because L10 and L12 assign it inside an <code>always</code>. It <em>does</em> also become real registers — but because of L8, not because of the word <code>reg</code>. On <strong>L19</strong>, <code>sum</code> is a <code>wire</code> because it is driven by <code>assign</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="8" data-hot="8">    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            parallel_out &lt;= 8'b0;</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q3">
+        <div class="qa-head"><span class="qnum">Q3</span><p class="qtext">What is a sensitivity list? What does "sky130_fd_sc_hd__dfrtp_2 — a D-Flip-Flop with Reset, True output (Q), Positive-edge clock. There are 16 of them: 8 per shift register × 2 instances ✔" even mean?</p></div>
+
+        <p>The <strong>sensitivity list</strong> is the <code>@(...)</code> part of an <code>always</code> block: the list of events that wake the block up. Here it reads <em>"re-evaluate this block when <code>clk</code> rises <strong>or</strong> when <code>rst_n</code> falls."</em></p>
+
+        <p>This exact shape is a <strong>template</strong>. The synthesizer does not reason about your code in general — it pattern-matches known idioms and swaps in the matching cell:</p>
+
+        <div class="tbl"><table>
+          <tr><th>Sensitivity list</th><th>What you get</th></tr>
+          <tr><td>@(posedge clk)</td><td>plain DFF</td></tr>
+          <tr><td>@(posedge clk or negedge rst_n)</td><td>DFF with <strong>asynchronous</strong> active-low reset → <code>dfrtp</code></td></tr>
+          <tr><td>@(*)</td><td>pure combinational gates, no memory</td></tr>
+        </table></div>
+
+        <p><strong>Async vs sync reset.</strong> Mentioning <code>rst_n</code> in the sensitivity list means reset acts <em>immediately</em>, without waiting for a clock edge — the reset wire goes physically into the flip-flop's own RESET_B pin. Had you instead written <code>@(posedge clk)</code> and tested <code>rst_n</code> inside, reset would only take effect at the next clock edge (synchronous) and would be built from a gate on the D input. Different silicon, from a one-word difference.</p>
+
+        <p><strong>As for the cell name and the "16":</strong> the name decodes to <em>d-flipflop, reset, true output, positive edge</em> — the breakdown table is in <a href="#foundations">Foundations §4</a>. The "16" was a sanity check: your source declares 8 bits of state and instantiates the module twice, so the design must contain 8 × 2 = 16 one-bit memory cells. The netlist contains exactly 16 <code>dfrtp_2</code>. The ✔ meant <em>source and silicon agree</em> — which is the fundamental move of this whole puzzle, just run in the forward direction.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="8" data-hot="10,12">    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            parallel_out &lt;= 8'b0;
+        else if (en)
+            parallel_out &lt;= {parallel_out[6:0], serial_in};
+    end
+endmodule</pre>
+      <div style="height:1rem"></div>
+      <pre class="code" data-start="1" data-file="the swap test" data-plain="1">// non-blocking — both read OLD values
+a &lt;= b;
+b &lt;= a;     // a and b SWAP
+
+// blocking — top-to-bottom, like software
+a = b;
+b = a;      // both end up as old b</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q4">
+        <div class="qa-head"><span class="qnum">Q4</span><p class="qtext">What is the 8'b0 syntax? What is a non-blocking assignment?</p></div>
+
+        <h3 style="margin-top:.4rem">Literal syntax</h3>
+        <p>The form is <code>&lt;width&gt;'&lt;base&gt;&lt;value&gt;</code>.</p>
+        <div class="tbl"><table>
+          <tr><th>Literal</th><th>Meaning</th></tr>
+          <tr><td>8'b0</td><td>8 bits, <strong>b</strong>inary, value 0 → <code>00000000</code></td></tr>
+          <tr><td>9'd496</td><td>9 bits, <strong>d</strong>ecimal, 496 → <code>111110000</code></td></tr>
+          <tr><td>8'hFF</td><td>8 bits, <strong>h</strong>ex, 255 → <code>11111111</code></td></tr>
+          <tr><td>1'b1</td><td>single bit, value 1</td></tr>
+        </table></div>
+        <p>The width is mandatory in good style because in hardware <strong>every signal has a fixed physical bit-width</strong> — there is no such thing as an unsized integer when it is made of wires. Writing <code>8'b0</code> rather than <code>0</code> says plainly: <em>eight wires, all held at ground.</em></p>
+
+        <h3>Blocking <code>=</code> vs non-blocking <code>&lt;=</code></h3>
+        <p>This is the classic beginner cliff, so here is the concrete version. Take two flops currently holding <code>a=1, b=0</code>, and a clock edge arrives.</p>
+        <p><strong>Non-blocking (<code>&lt;=</code>)</strong> means: <em>read all right-hand sides first using the OLD values, then update everything at once.</em> So <code>a</code> gets old <code>b</code> (0) and <code>b</code> gets old <code>a</code> (1) — they <strong>swap</strong>. This is exactly what real flip-flops do: they all sample simultaneously on the edge, before any of them have updated.</p>
+        <p><strong>Blocking (<code>=</code>)</strong> executes top-to-bottom like software: <code>a</code> becomes 0, then <code>b</code> reads the <em>already-updated</em> <code>a</code> and also becomes 0. No swap. Not what the hardware does.</p>
+
+        <div class="trap">
+          <div class="tlabel">Why L12 would break with =</div>
+          <p>In <code>parallel_out &lt;= {parallel_out[6:0], serial_in}</code>, every bit must simultaneously take the <em>old</em> value of its neighbour. With <code>&lt;=</code>, all 8 bits sample the old state at once and shift cleanly. With <code>=</code>, bit 1 would grab bit 0's <em>already-shifted</em> value, and the whole register would collapse into eight copies of <code>serial_in</code>.</p>
+          <p><strong>The rule:</strong> <code>&lt;=</code> in clocked blocks, <code>=</code> in combinational blocks. Follow it mechanically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="9" data-hot="11,13">        if (!rst_n)
+            parallel_out &lt;= 8'b0;
+        else if (en)
+            parallel_out &lt;= {parallel_out[6:0], serial_in};
+    end</pre>
+      <div style="height:1rem"></div>
+      <pre class="figure">                    ┌──── mux2 ────┐
+ shifted value ────▶│A1            │
+                    │           X ─┼─▶ D ┌─────┐
+   Q (feedback) ───▶│A0            │     │ DFF │──┬──▶ Q
+                    │  S           │     └─────┘  │
+        en ────────▶└──────────────┘        ▲     │
+                                            └─────┘
+                                          feedback</pre>
+      <div style="height:1rem"></div>
+      <pre class="code" data-start="401" data-file="warmup/01_netlist.v">sky130_fd_sc_hd__mux2_1 \sr_a/_08_  (.A0(\a_reg[0] ),
+    .A1(A),
+    .S(en),
+    .X(\sr_a/_00_ ));
+sky130_fd_sc_hd__mux2_1 \sr_a/_09_  (.A0(\a_reg[1] ),
+    .A1(\a_reg[0] ),
+    .S(en),
+    .X(\sr_a/_01_ ));</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q5">
+        <div class="qa-head"><span class="qnum">Q5</span><p class="qtext">What is a DFF? What is the histogram here? I don't understand the explanation of L11 at all.</p></div>
+
+        <p>DFF and histogram are covered in <a href="#foundations">Foundations §3 and §5</a>. Here is L11 properly, because it is genuinely the subtlest thing in the file.</p>
+
+        <p>Enumerate the three cases at a clock edge:</p>
+        <ul>
+          <li><code>rst_n == 0</code> → load zero</li>
+          <li><code>rst_n == 1, en == 1</code> → load the shifted value</li>
+          <li><code>rst_n == 1, en == 0</code> → <strong>the code says nothing</strong></li>
+        </ul>
+        <p>Notice there is no <code>else</code> clause at all — the <code>if</code> chain just ends at L13.</p>
+
+        <p>In software, "says nothing" means do nothing. In hardware, <em>"the value must not change"</em> means you have to physically build something that <strong>remembers</strong> — which is the definition of state. Verilog's rule is: if a <code>reg</code> is not assigned on some path through the block, it must <strong>hold its previous value</strong>.</p>
+
+        <p>But look at the DFF again. It has <code>D</code>, <code>CLK</code>, <code>Q</code>. There is <strong>no "freeze" pin.</strong> The clock is still ticking — you must never casually gate a clock, that is how you get skew and glitch bugs — so the flop <em>will</em> capture whatever sits on <code>D</code> at the next edge, unavoidably.</p>
+
+        <p>The only way to make <code>Q</code> come out unchanged is to <strong>feed <code>Q</code> back into <code>D</code></strong>. If D already equals Q, the capture is a no-op. So the synthesizer inserts a <strong>multiplexer</strong> — a two-way switch, <code>X = S ? A1 : A0</code> — in front of every flop, as in the diagram.</p>
+        <p>With <code>en=1</code>, D gets the new shifted value. With <code>en=0</code>, D gets Q back, so the flop reloads what it already had. Held.</p>
+
+        <p><strong>And that is precisely the 16 <code>mux2_1</code> cells</strong> — one per flop. The third block is the real thing from your netlist. You can read the shift register straight off the page: bit 0's mux takes external <code>A</code>, bit 1's takes <code>a_reg[0]</code>, bit 2's takes <code>a_reg[1]</code>… each stage fed by its neighbour, with each flop's own output wired to <code>A0</code> as the hold path. That chain <em>is</em> "enabled shift register" in netlist form.</p>
+
+        <div class="trap">
+          <div class="tlabel">Use this on the real puzzle</div>
+          <p>A mux whose <code>A0</code> comes from its own flop's <code>Q</code> is <strong>control logic — a clock enable — not datapath</strong>. When you extract a netlist from <code>puzzle.gds</code>, recognising and filtering out this pattern strips away a large pile of cells that compute nothing, and the actual logic gets much easier to see.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== MODULE 2 ==================== -->
+
+<section class="part">
+  <div class="part-head">
+    <div class="part-num">Lines 16–22 · module 2 of 4</div>
+    <h2><code>adder8</code> — pure combinational logic</h2>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="16" data-hot="19,21">module adder8 (
+    input  wire [7:0] a,
+    input  wire [7:0] b,
+    output wire [8:0] sum
+);
+    assign sum = a + b;
+endmodule</pre>
+    </div>
+    <div class="notes">
+      <h3>Line by line</h3>
+      <ul>
+        <li><strong>L19</strong> — the output is <strong>9 bits</strong>, one wider than the inputs, to hold the carry-out without overflowing. 255 + 255 = 510, which needs 9 bits.</li>
+        <li><strong>L21</strong> — purely combinational: an <code>assign</code> onto a <code>wire</code>, no clock anywhere. Note Verilog's width rules — because the left-hand side is 9 bits, both operands are zero-extended to 9 bits before the addition, so the carry is captured correctly. Had <code>sum</code> been declared <code>[7:0]</code>, the carry would be silently dropped.</li>
+      </ul>
+      <p>Synthesis expands this one line into a ripple-carry-style chain of <code>xor2</code>, <code>and2</code>, <code>nand2</code>, <code>or2</code>, <code>a21o</code> and <code>a31o</code> cells: the XORs generate the sum bits, the AND/OR cells propagate the carry.</p>
+      <div class="trap">
+        <div class="tlabel">Reverse-engineering fingerprint</div>
+        <p>A chain of XOR2 cells with AND/OR cells interleaved between them is the classic signature of an adder in an unknown netlist.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="21" data-hot="21">    assign sum = a + b;</pre>
+      <div style="height:1rem"></div>
+      <pre class="figure">a_reg ─┐
+       ├─▶[ adder gates ]─▶ sum
+b_reg ─┘        ▲
+                │
+        garbage while the carry
+        ripples; correct only
+        after it settles
+
+ flops sample AFTER settling.
+ that is what the clock is for.</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q6">
+        <div class="qa-head"><span class="qnum">Q6</span><p class="qtext">When add is assigned as you call 'purely combinational', why is a clock even needed?</p></div>
+
+        <p>The adder itself needs no clock — you are right. It is a lump of gates, permanently computing. If you could wiggle <code>a_reg</code> and <code>b_reg</code> directly with your fingers, <code>sum</code> would follow with no clock anywhere in sight.</p>
+        <p>The clock is needed for the parts <strong>around</strong> it:</p>
+        <ol>
+          <li><strong>Something has to hold <code>a</code> and <code>b</code> steady.</strong> The adder's inputs come from flip-flops. Those flops are what need clocking. The adder is a passive consumer of whatever they present.</li>
+          <li><strong>Serial input needs a notion of "next".</strong> <code>A</code> is one wire delivering 8 bits <em>over time</em>. "Over time" requires a heartbeat that defines when one bit ends and the next begins. That is the clock.</li>
+          <li><strong>Combinational logic is briefly wrong.</strong> When <code>a_reg</code> changes, the carry ripples through the adder gate by gate, and for a few hundred picoseconds <code>sum</code> shows meaningless intermediate garbage before settling. Flip-flops paper over this: they only sample at clock edges, and the clock period is chosen to exceed the worst-case settling time.</li>
+        </ol>
+        <p>That third point is the fundamental discipline of synchronous design: <strong>let combinational logic settle, then latch it.</strong> Combinational logic does the computing, flip-flops do the remembering, and the clock says when it is safe to move from one to the other.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== MODULE 3 ==================== -->
+
+<section class="part">
+  <div class="part-head">
+    <div class="part-num">Lines 24–29 · module 3 of 4</div>
+    <h2><code>comparator496</code> — the magic constant</h2>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="24" data-hot="28">module comparator496 (
+    input  wire [8:0] val,
+    output wire       eq
+);
+    assign eq = (val == 9'd496);
+endmodule</pre>
+      <div style="height:1rem"></div>
+      <pre class="figure">9'd496 = 1 1 1 1 1 0 0 0 0
+         │ │ │ │ │ └─┴─┴─┴── must be 0
+         └─┴─┴─┴─┴────────── must be 1
+        b8              b0</pre>
+    </div>
+    <div class="notes">
+      <h3>Line by line</h3>
+      <p><strong>L28</strong> — <code>9'd496</code> is a 9-bit decimal literal, binary <code>1_1111_0000</code>. So the comparison is: bits [8:4] must all be <strong>1</strong>, and bits [3:0] must all be <strong>0</strong>.</p>
+      <p>Equality against a <em>constant</em> is far cheaper than a general comparator. It collapses into one big AND of the true bits and the inverted false bits — which is what the <code>8 × nor2_2</code> (checking that groups of low bits are zero) and <code>2 × and4bb_2</code> (AND with two inverted inputs) are doing in the netlist.</p>
+      <div class="trap">
+        <div class="tlabel">Reverse-engineering fingerprint</div>
+        <p>A wide AND/NOR tree converging to a <strong>single output bit</strong> is the signature of a comparison against a magic constant. Finding that constant is very often the goal of a puzzle like this one — so on the real <code>puzzle.gds</code>, work backwards from the <code>success</code> pin and this is roughly what you should expect to run into.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== MODULE 4 ==================== -->
+
+<section class="part">
+  <div class="part-head">
+    <div class="part-num">Lines 31–59 · module 4 of 4</div>
+    <h2><code>adder_demo</code> — the top level</h2>
+    <p class="part-sub">The only module that becomes anything physical at the chip boundary. Q7, Q8 and Q9 live here.</p>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="31" data-hot="31,32,33,34,35,36,37,38">module adder_demo (
+    input  wire clk,
+    input  wire rst_n,
+    input  wire A,
+    input  wire B,
+    output wire S,
+    input  wire en
+);</pre>
+      <div style="height:1rem"></div>
+      <pre class="figure"> 6 pins          16 bits of state
+ ────────        ─────────────────
+ clk             a_reg [7:0]
+ rst_n           b_reg [7:0]
+ A   ──serial──▶
+ B   ──serial──▶  8 cycles to fill
+ S
+ en</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q7">
+        <div class="qa-head"><span class="qnum">Q7</span><p class="qtext">How do you know only module adder_demo is the one whose ports survive as physical I/O pins in the GDS? And what does "6 pins but 16 bits of internal state" mean?</p></div>
+
+        <h3 style="margin-top:.4rem">Why this module</h3>
+        <p><strong>The hierarchy points at it.</strong> <code>adder_demo</code> instantiates the other three (L42, L47, L52, L56); nothing instantiates <code>adder_demo</code>. That makes it the <strong>top module</strong> — the root of the tree, the outermost box. Its ports are the boundary of the design; everything else is internal plumbing between sub-boxes. In a real flow you also explicitly tell the tool <code>-top adder_demo</code>.</p>
+        <p><strong>And hierarchy is fictional anyway.</strong> Module boundaries are an organisational convenience for humans. Synthesis <strong>flattens</strong> them: the two <code>shift_register</code> instances get copied out and 32 loose cells end up in one flat pile. Open <code>01_netlist.v</code> and there is exactly <strong>one</strong> <code>module</code> keyword — the sub-modules survive only as name prefixes like <code>\sr_a/_16_</code>. Even those prefixes are stripped by the GDS stage.</p>
+        <p>Physical pins exist only where silicon meets the outside world: bond pads wired out to package pins. There is simply nowhere for <code>adder8</code>'s ports to physically <em>be</em>.</p>
+
+        <h3>The 6-vs-16 point</h3>
+        <p>Pins are genuinely scarce and expensive. Each needs a bond pad, a package pin and a board trace, and pads are enormous compared to logic cells. This design has six: <code>clk, rst_n, A, B, S, en</code>.</p>
+        <p>But the circuit needs <strong>16 bits</strong> of input data — 8 for <code>a_reg</code>, 8 for <code>b_reg</code>. With six pins you cannot have 16 data wires. Two options:</p>
+        <ul>
+          <li><strong>Parallel</strong> — 16 dedicated input pins, all bits arriving at once. Fast, wastefully wide.</li>
+          <li><strong>Serial</strong> — 2 pins (<code>A</code>, <code>B</code>), one bit each per clock cycle, 8 cycles to fill both registers. This is what the design does.</li>
+        </ul>
+        <p><strong>Serialising is trading time for pins.</strong> The shift registers are the mechanism: they accept a dribble of bits over 8 cycles and turn it into a wide parallel value the adder can consume in one go. Same trade-off as SPI, I²C or USB versus a 64-bit parallel bus.</p>
+
+        <div class="trap">
+          <div class="tlabel">What this means for the puzzle</div>
+          <p>Your only lever on <code>puzzle.gds</code> is toggling a handful of pins over a sequence of clock cycles — exactly what <code>example_inputs.vcd</code> shows. The answer is therefore not a static value; it is a <strong>waveform</strong>: which pins are high on which cycles.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="34" data-hot="34,35">    input  wire A,
+    input  wire B,</pre>
+      <div style="height:1rem"></div>
+      <pre class="code" data-start="6" data-file="where the 8 actually lives" data-plain="1">output reg  [7:0]  parallel_out
+                    │   │
+                    │   └── LSB
+                    └────── MSB
+        [7:0] = indices 7 down to 0
+              = 8 bits</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q9">
+        <div class="qa-head"><span class="qnum">Q9</span><p class="qtext">What is the shape of A and B, how do you conclude that they are 8 bits in size, from type inference? Is the .clk(clk) syntax how you pass arguments to shift_register? What is dfrtp?</p></div>
+
+        <h3 style="margin-top:.4rem">Widths are declared, never inferred</h3>
+        <p>Verilog does no type inference. Widths are always explicit or defaulted — and here is the correction worth internalising: <strong><code>A</code> and <code>B</code> are not 8 bits. They are 1 bit each.</strong></p>
+        <p>On L34, <code>input wire A</code> has no <code>[x:y]</code>, so it defaults to a single bit — one physical wire, carrying one bit per clock cycle.</p>
+        <p>The 8 comes from the <em>register</em>, on L6: <code>[7:0]</code> declares a <strong>vector</strong> — indices 7 down to 0, so 8 bits, MSB at 7 and LSB at 0. The convention is <code>[MSB:LSB]</code>, descending. And <code>sum</code> is <code>[8:0]</code>, one wider, for the carry.</p>
+        <p>So the shape is: <strong><code>A</code> and <code>B</code> are each one wire carrying a serial bit-stream.</strong> The eight-bit-ness lives in the shift register that accumulates them, not in the pin.</p>
+        <p>Which direction the stream fills the register is decided by the concatenation on L12 — worth working out yourself from first principles, since it determines your bit ordering and therefore your answer.</p>
+
+        <h3>Yes, <code>.clk(clk)</code> is the connection syntax</h3>
+        <p>It is called a <strong>named port connection</strong>. Read <code>.clk(clk)</code> as <em>"connect the port named <code>clk</code> to my local signal named <code>clk</code>."</em> Those are two different namespaces that happen to share a name; <code>.serial_in(A)</code> shows the general case. The breakdown is in the next block.</p>
+        <p>The alternative is positional — <code>shift_register sr_a (clk, rst_n, en, A, a_reg);</code> — which depends on port order and goes silently wrong the moment anyone reorders the port list. Always use named.</p>
+
+        <h3>dfrtp</h3>
+        <p><strong>d</strong>-<strong>f</strong>lip-flop, <strong>r</strong>eset, <strong>t</strong>rue output, <strong>p</strong>ositive edge. Related cells in the same library follow the same scheme:</p>
+        <div class="tbl"><table>
+          <tr><th>Cell</th><th>What differs</th></tr>
+          <tr><td>dfrtp</td><td>reset, true output, positive edge — the one you have</td></tr>
+          <tr><td>dfstp</td><td><strong>s</strong>et instead of reset</td></tr>
+          <tr><td>dfxtp</td><td>plain — no reset, no set</td></tr>
+          <tr><td>dfbbn</td><td>both set and reset, both outputs, <strong>n</strong>egative edge</td></tr>
+        </table></div>
+        <p>The full catalogue is the <a href="https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells.html">SkyWater PDK cell reference</a> — worth bookmarking, you will be looking up cell names constantly while decoding <code>puzzle.gds</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="39" data-hot="39,40">    wire [7:0] a_reg, b_reg;
+    wire [8:0] sum;</pre>
+      <div style="height:1rem"></div>
+      <pre class="figure">module adder_demo (
+    input  wire clk,      ┐
+    ...                   ├ PORTS
+    input  wire en        ┘
+);   ◀── port list ends here
+    wire [7:0] a_reg;     ┐
+    wire [8:0] sum;       ┘ INTERNAL
+    ...
+endmodule</pre>
+    </div>
+    <div class="notes">
+      <div class="qa" id="q8">
+        <div class="qa-head"><span class="qnum">Q8</span><p class="qtext">How do you know a_reg, b_reg and sum are internal nets? What is a net btw?</p></div>
+
+        <p>A <strong>net</strong> is a physical electrical connection — a wire, or more precisely a set of pins all shorted together at the same voltage. "Net" is the netlist word for it; <code>wire</code> is the Verilog word for the same thing. A <strong>netlist</strong> is literally <em>the list of nets</em>: which cell pins connect to which. That is all a circuit fundamentally <em>is</em> — cells plus nets.</p>
+
+        <p>As for how I know these are internal: it is pure scoping. Ports are the names listed between the <code>(</code> on L31 and the <code>)</code> on L38, each tagged <code>input</code> or <code>output</code>. <code>a_reg</code>, <code>b_reg</code> and <code>sum</code> appear <em>after</em> the port list closes, with no direction keyword — so they are local declarations, visible only inside <code>adder_demo</code>. Same rule as local variables inside a function.</p>
+
+        <p>Their job is to connect one instance's output to another's input: L44 has <code>sr_a</code> driving <code>a_reg</code>, and L53 has <code>add0</code> consuming it. Purely internal plumbing. In silicon they are real copper traces between cells, but they never reach a pad.</p>
+
+        <div class="trap">
+          <div class="tlabel">This is the crux of the whole challenge</div>
+          <p><code>01_netlist.v</code> still calls them <code>\a_reg[0]</code>, <code>\sum[3]</code> and so on. By <code>04_final.gds</code> those names are <strong>deleted</strong>. You get anonymous geometry and have to re-derive what each net <em>means</em> from structure alone.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="42" data-hot="42,43,44,45,47,48,49,50">    shift_register sr_a (
+        .clk(clk), .rst_n(rst_n), .en(en),
+        .serial_in(A), .parallel_out(a_reg)
+    );
+
+    shift_register sr_b (
+        .clk(clk), .rst_n(rst_n), .en(en),
+        .serial_in(B), .parallel_out(b_reg)
+    );</pre>
+      <div style="height:1rem"></div>
+      <pre class="figure">shift_register sr_a ( .clk(clk), ... );
+│              │       │    │
+│              │       │    └─ signal in adder_demo
+│              │       └────── port inside shift_register
+│              └────────────── instance name
+└───────────────────────────── module being instantiated</pre>
+    </div>
+    <div class="notes">
+      <h3>Instantiation — L42 to L50</h3>
+      <p>Two instances of the same module, using named port connections. They share <code>clk</code>, <code>rst_n</code> and <code>en</code>, and differ only in their serial input and output bus.</p>
+
+      <div class="trap">
+        <div class="tlabel">Not a function call</div>
+        <p>Nothing is invoked here. <code>shift_register sr_a (...)</code> means <em>place a physical copy of this circuit here and wire it up</em>. <code>sr_a</code> and <code>sr_b</code> are two separate piles of silicon existing simultaneously — not two calls to one function. The instance name is a label so you can refer to that specific copy, which is exactly why the netlist has <code>\sr_a/_16_</code> and <code>\sr_b/_16_</code> as distinct cells.</p>
+      </div>
+
+      <p>Because they are identical and share control signals, place-and-route often lays them out as two visually similar rows — another handy cue when you are staring at an unfamiliar layout.</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="code" data-start="52" data-hot="52,56">    adder8 add0 (
+        .a(a_reg), .b(b_reg), .sum(sum)
+    );
+
+    comparator496 cmp0 (
+        .val(sum), .eq(S)
+    );
+endmodule</pre>
+    </div>
+    <div class="notes">
+      <h3>The datapath — L52 to L58</h3>
+      <p>The whole design in one line of dataflow:</p>
+      <pre class="figure">A ─▶[sr_a]─▶ a_reg ─┐
+                    ├─▶[add0]─▶ sum ─▶[cmp0]─▶ S
+B ─▶[sr_b]─▶ b_reg ─┘</pre>
+      <p>Serial bits in on two pins, accumulated into two 8-bit registers, added, compared against a constant, and the single-bit verdict goes out on <code>S</code>.</p>
+      <p>That last hop — combinational logic converging on one output pin — is structurally the same thing you are looking for in the real puzzle, where the pin is called <code>success</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== GLOSSARY ==================== -->
+
+<section class="part" id="glossary">
+  <div class="part-head">
+    <div class="part-num">Reference</div>
+    <h2>Glossary</h2>
+    <p class="part-sub">Everything introduced above, in one place.</p>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <tr><th>Term</th><th>Meaning</th></tr>
+      <tr><td>combinational</td><td>Logic with no memory; output is a function of inputs right now. Gates.</td></tr>
+      <tr><td>sequential</td><td>Logic with memory; needs a clock. Flip-flops.</td></tr>
+      <tr><td>DFF</td><td>D flip-flop. One bit of memory. Captures D onto Q at a clock edge.</td></tr>
+      <tr><td>net</td><td>An electrical connection — a set of pins shorted together. A wire.</td></tr>
+      <tr><td>netlist</td><td>The list of cells and the nets connecting them. What a circuit fundamentally is.</td></tr>
+      <tr><td>standard cell</td><td>A pre-drawn, pre-verified logic block from the foundry's library.</td></tr>
+      <tr><td>synthesis</td><td>Converting Verilog into a netlist of standard cells.</td></tr>
+      <tr><td>place &amp; route</td><td>Deciding where each cell physically sits and drawing the wires between them.</td></tr>
+      <tr><td>GDS / GDSII</td><td>The final layout file: pure polygons per layer, ready to manufacture. Names stripped.</td></tr>
+      <tr><td>fanout</td><td>How many input pins one output drives.</td></tr>
+      <tr><td>drive strength</td><td>Transistor sizing of a cell; the <code>_1</code>, <code>_2</code>, <code>_16</code> suffix. Bigger drives heavier loads.</td></tr>
+      <tr><td>buffer</td><td>An amplifier cell inserted to help a high-fanout signal reach everything in time.</td></tr>
+      <tr><td>clock skew</td><td>The spread in arrival time of a clock edge across different flops. Must be tiny.</td></tr>
+      <tr><td>clock tree</td><td>The balanced buffer network that distributes the clock with minimal skew.</td></tr>
+      <tr><td>active-low</td><td>A signal that acts when it is 0. Marked <code>_n</code> or <code>_b</code>.</td></tr>
+      <tr><td>async reset</td><td>Reset that acts immediately, not at a clock edge. Wired to the flop's own reset pin.</td></tr>
+      <tr><td>sensitivity list</td><td>The <code>@(...)</code> events that wake an <code>always</code> block. Determines what cell you get.</td></tr>
+      <tr><td>blocking <code>=</code></td><td>Executes top-to-bottom. For combinational blocks.</td></tr>
+      <tr><td>non-blocking <code>&lt;=</code></td><td>All right-hand sides read old values, then all update at once. For clocked blocks.</td></tr>
+      <tr><td>vector</td><td>A multi-bit signal, declared <code>[MSB:LSB]</code>, e.g. <code>[7:0]</code> for 8 bits.</td></tr>
+      <tr><td>mux</td><td>Multiplexer. A switch: <code>X = S ? A1 : A0</code>.</td></tr>
+      <tr><td>clock enable</td><td>Holding a flop's value by muxing its own Q back into its D. Not a real flop pin.</td></tr>
+      <tr><td>flattening</td><td>Synthesis dissolving module boundaries into one flat pile of cells.</td></tr>
+      <tr><td>top module</td><td>The module nothing else instantiates. Its ports become physical pins.</td></tr>
+      <tr><td>serialising</td><td>Sending a wide value one bit at a time over few pins. Trading time for pins.</td></tr>
+      <tr><td>tap cell</td><td>Filler that ties the substrate to power, preventing latch-up. No logic.</td></tr>
+      <tr><td>decap cell</td><td>Filler capacitor that steadies the power supply. No logic.</td></tr>
+      <tr><td>PDK</td><td>Process Design Kit — everything the foundry gives you to design for their process.</td></tr>
+      <tr><td>VCD</td><td>Value Change Dump — a waveform file recording how signals changed over time.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== NEXT ==================== -->
+
+<section class="part">
+  <div class="part-head">
+    <div class="part-num">Where to go next</div>
+    <h2>Building the intuition before touching <code>puzzle.gds</code></h2>
+  </div>
+
+  <div class="block">
+    <div class="code-col">
+      <pre class="figure">00_source.v          ← you are here
+      ↓ synthesis
+01_netlist.v         ← trace sr_b next
+      ↓ power
+02_..._power_rails.v
+      ↓ place & route
+03_post_place_...def
+      ↓ stream out
+04_final.gds         ← names gone
+
+  the puzzle runs this backwards</pre>
+    </div>
+    <div class="notes">
+      <ol>
+        <li><strong>Trace <code>sr_b</code> yourself</strong> in <code>01_netlist.v</code>, the same way <code>sr_a</code> is traced in <a href="#q5">Q5</a>. Find its 8 muxes and 8 flops and confirm the chain hangs together.</li>
+        <li><strong>Find the <code>xor2</code> cells</strong> and see whether you can pick out the adder's bit-slice structure by hand.</li>
+        <li><strong>Work out the bit ordering</strong> from L12 — which end of the register the first bit you shift in ends up at. You need this before any answer you compute will be right.</li>
+        <li><strong>Then open <code>04_final.gds</code></strong> in KLayout alongside <code>03_post_place_and_route.def</code>. The DEF still has names, so you can check your reading of the geometry against ground truth — which is the one chance you get to calibrate before the real puzzle, where there is no answer key.</li>
+      </ol>
+      <p>Once the warm-up netlist reads naturally, the jump to extracting one from GDS is mostly a tooling problem rather than a conceptual one.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="page">
+  <p>Companion to <code>warmup/00_source.v</code> in the Jane Street ASIC reverse-engineering puzzle. Netlist excerpts are quoted verbatim from <code>warmup/01_netlist.v</code> at the line numbers shown.</p>
+  <p>This page deliberately stops short of solving the warm-up — it explains the mechanism, not the input values.</p>
+</footer>
+
+</div>
+
+<script>
+  (function () {
+    var KEYWORDS = ['module', 'endmodule', 'input', 'output', 'inout', 'wire', 'reg',
+      'always', 'begin', 'end', 'if', 'else', 'assign', 'posedge', 'negedge', 'or'];
+
+    var RE = new RegExp(
+      '(\\/\\/[^\\n]*)' +                                  // 1 comment
+      '|(\\b\\d+\'[bdhoBDHO][0-9a-fA-FxzXZ_]+)' +          // 2 sized literal
+      '|(\\.[A-Za-z_]\\w*)' +                              // 3 port reference
+      '|(\\b(?:' + KEYWORDS.join('|') + ')\\b)' +          // 4 keyword
+      '|(\\b\\d+\\b)',                                     // 5 bare number
+      'g');
+
+    function highlight(line) {
+      return line.replace(RE, function (m, com, lit, port, kw, num) {
+        if (com) return '<span class="tk-com">' + com + '</span>';
+        if (lit) return '<span class="tk-num">' + lit + '</span>';
+        if (port) return '<span class="tk-port">' + port + '</span>';
+        if (kw) return '<span class="tk-kw">' + kw + '</span>';
+        if (num) return '<span class="tk-num">' + num + '</span>';
+        return m;
+      });
+    }
+
+    document.querySelectorAll('pre.code').forEach(function (pre) {
+      // innerHTML is already HTML-escaped in the source, so do not re-escape.
+      var lines = pre.innerHTML.replace(/^\n+|\s+$/g, '').split('\n');
+      var start = parseInt(pre.getAttribute('data-start') || '1', 10);
+      var plain = pre.hasAttribute('data-plain');
+      var file = pre.getAttribute('data-file');
+      var hot = (pre.getAttribute('data-hot') || '').split(',')
+        .filter(Boolean).map(function (n) { return parseInt(n, 10); });
+
+      var out = '';
+      if (file) out += '<span class="cap">' + file + '</span>';
+
+      lines.forEach(function (line, i) {
+        var n = start + i;
+        var cls = hot.indexOf(n) !== -1 ? ' hot' : '';
+        var body = plain ? line : highlight(line);
+        out += '<div class="row' + cls + '">' +
+               '<span class="ln">' + (plain ? '' : n) + '</span>' +
+               '<span class="lc">' + (body || ' ') + '</span></div>';
+      });
+
+      pre.innerHTML = out;
+    });
+  })();
+</script>
+
+</body>
+</html>

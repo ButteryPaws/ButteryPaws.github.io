@@ -3,7 +3,7 @@ title: 'Hello, world — and how this site is built'
 description: 'A quick tour of the stack behind this site and how to add a new post.'
 date: 2026-07-07
 tags: ['meta', 'astro']
-draft: false
+draft: true
 ---
 
 Welcome. This is a placeholder post so the site has something to show — feel
